@@ -1,9 +1,0 @@
-Package: libmnl
-Version: 1.0.3-1
-Depends: libc
-Source: package/libs/libmnl
-Section: libs
-Maintainer: Jo-Philipp Wich <jow@openwrt.org>
-Architecture: ramips_1004kc
-Installed-Size: 5534
-Description:  unknown
