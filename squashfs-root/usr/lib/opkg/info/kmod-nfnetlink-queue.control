@@ -1,0 +1,10 @@
+Package: kmod-nfnetlink-queue
+Version: 3.10.14-1
+Depends: kernel (=3.10.14-1-b111ad83351afe639183d8564c3857ca), kmod-nfnetlink
+Source: package/kernel/linux
+License: GPLv2
+Section: kernel
+Status: unknown hold not-installed
+Architecture: ramips_1004kc
+Installed-Size: 8054
+Description:  unknown

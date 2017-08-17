@@ -1,0 +1,1079 @@
+<style type="text/css">
+	div.wan-sta{
+		margin:20px auto 10px;
+		width:300px;
+	}
+	i.wan-sta-icon{
+		display:inline-block;
+		font-size:24px;
+		line-height:19px;
+		margin-right:2px;
+		vertical-align:top;
+	}
+	i.icon_remind_line{
+		color:#F34947;
+	}
+	i.icon_select_on{
+		color:#0BCD1E;
+	}
+	p.status-detail{
+		display:inline-block;
+		font-size:14px;
+		width:274px;
+	}
+	#Detect{
+		background-color:#1499E6;
+		margin-top:10px;
+		margin-bottom:10px;
+	}
+	span.high-set{
+		cursor:pointer;
+		display:inline-block;
+		margin-right:110px;
+		width:40px;
+		line-height:20px;
+		color:#FE8F19;
+		font-size:16px;
+	}
+	div.high-top{
+		padding:10px 0px 0;
+	}
+	span.mac-clone{
+		color:rgb(254, 152, 24);
+		cursor:pointer;
+		position:absolute;
+		left:300px;
+		width:100px;
+		font-size:14px;
+		line-height:34px;
+		padding:0 0.5em;
+	}
+	/*1080p适配*/
+	@media screen and (min-device-width:1920px){
+		div.wan-sta{
+			width:400px;
+		}
+		i.wan-sta-icon{
+			font-size:26px;
+			line-height:22px;
+		}
+		p.status-detail{
+			font-size:16px;
+			line-height:18px;
+			width:368px;
+		}
+		span.high-set{
+			line-height:24px;
+			font-size:20px;
+			margin-right:154px;
+		}
+		span.mac-clone {
+			left: 400px;
+			width: 120px;
+			font-size: 18px;
+			line-height: 46px;
+		}
+	}
+</style>
+<script type="text/javascript">
+(function(){
+	<%
+		local para = {
+			network = {wan = {}, static = {}, dhcp = {}, pppoe = {}},
+			wisp = {config = {}}
+		}
+
+		local result = tpl_get_data(para, true)
+	-%>
+
+	var result = <%=result%>;
+	var wan = result[K_MODULE].network.wan;
+	var static = result[K_MODULE].network.static;
+	var dhcp = result[K_MODULE].network.dhcp;
+	var pppoe = result[K_MODULE].network.pppoe;
+	var wispStatus = result[K_MODULE].wisp.config;
+
+	var curWanType = wan.protocol;
+	var cloneMode = wan.clone_mode;
+	var cloneMac = wan.mac;
+	var sourceMac = wan.source_mac;
+	var hostMac = BROWSER.mac;
+	var statusHd = null;
+	var currentState = stateman.current.name;
+
+	var WAN_TYPE_DHCP = "dhcp",
+		WAN_TYPE_PPPoE = "pppoe",
+		WAN_TYPE_STATIC_IP = "static";
+
+	var WanType = [{name:label.wanDHCP, value:WAN_TYPE_DHCP},
+				   {name:label.wanPPPoE, value:WAN_TYPE_PPPoE},
+				   {name:label.wanStatic, value:WAN_TYPE_STATIC_IP}
+				   ];
+
+	initSelect("WanType", WanType, curWanType, function(val, init){
+		setWantype(val);
+		setHelpMsg(val);
+		$(".err-note").hide();
+	});
+
+	var curDiaType = pppoe.dial_mode;
+	var DiaType = [{name:label.diaNormal, value:"0"},
+				   {name:label.diaSpecialOne, value:"1"},
+				   {name:label.diaSpecialTwo, value:"2"},
+				   {name:label.diaSpecialThree, value:"3"},
+				   {name:label.diaSpecialFour, value:"4"}
+				   ];
+
+	initSelect("PppoeDiaType", DiaType, curDiaType);
+
+	initSwitch("CloneSwitch", cloneMode, function(state){
+		if (1 == state){
+			$("#CloneParam").show();
+			$("#MacCloAddr").val(cloneMac);
+		}else{
+			$("#CloneParam").hide();
+			closeNote();
+		}
+	});
+
+	$("span.mac-clone").click(function(){
+		$("#MacCloAddr").val(hostMac);
+	});
+
+	function initPppoe(){
+		var PppoeUser = pppoe.username;
+		var PppoePwd = pppoe.password;
+		var PppoeSer = pppoe.server;
+
+		$("#PppoeUser").val(PppoeUser);
+		$("#PppoePwd").val(PppoePwd);
+		$("#PppoeServ").val(PppoeSer);
+	}
+
+	function initStaticIp(){
+		var ipVal = static.ip;
+		var maskVal = static.netmask;
+		var gwVal = static.gateway;
+		var primDns = static.dns_pri;
+		var secDns = static.dns_sec;
+
+		$("#WanIpaddr").val(ipVal);
+		$("#WanMask").val(maskVal);
+		$("#WanGw").val(gwVal);
+		$("#PrimDns").val(primDns);
+		$("#SecDns").val(secDns);
+	}
+
+	function initAdvSelfDns(dnsEn, primDns, secDns){
+		if ("static" == $("#WanType").attr("data-value")){
+			$("#SeniorSelfDns").hide();
+			$("#Param").hide();
+		}else{
+			$("#SeniorPrimDns").val(primDns);
+			$("#SeniorSecDns").val(secDns);
+
+			$("#SeniorSelfDns").show();
+			$("#Switch").unbind("click");
+			initSwitch("Switch", dnsEn, function(state){
+				if (1 == state){
+					$("#Param").show();
+				}else{
+					$("#Param").hide();
+					closeNote();
+				}
+			});
+		}
+	}
+
+	function setWantype(wanType){
+		var advPrimDns, advSecDns, advSelfDnsEn;
+
+		switch(wanType){
+		case WAN_TYPE_DHCP:
+			$("#WanPppoeSet").hide();
+			$("#WanStaticSet").hide();
+			$("#Mtu").attr('placeholder', label.dhcpMtuTip);
+			$("#Mtu").val(dhcp.mtu);
+			advSelfDnsEn = dhcp.dns_mode;
+			advPrimDns = dhcp.dns_pri;
+			advSecDns = dhcp.dns_sec;
+			break;
+		case WAN_TYPE_PPPoE:
+			$("#WanPppoeSet").show();
+			$("#WanStaticSet").hide();
+			$("#Mtu").attr('placeholder', label.pppoeMtuTip);
+			$("#Mtu").val(pppoe.mtu);
+			advSelfDnsEn = pppoe.dns_mode;
+			advPrimDns = pppoe.dns_pri;
+			advSecDns = pppoe.dns_sec;
+			initPppoe();
+			break;
+		case WAN_TYPE_STATIC_IP:
+		default:
+			$("#WanPppoeSet").hide();
+			$("#WanStaticSet").show();
+			$("#Mtu").attr('placeholder', label.staticMtuTip);
+			$("#Mtu").val(static.mtu);
+			advSelfDnsEn = "";
+			initStaticIp();
+			break;
+		}
+
+		initAdvSelfDns(advSelfDnsEn, advPrimDns, advSecDns);
+	}
+
+	function setHelpMsg(wanType){
+		switch(wanType){
+		case WAN_TYPE_DHCP:
+			$("#Type").text(helpStr.wanDhcp);
+			$("#TypeTip").text(helpStr.wanDhcpTip);
+			$("#MtuTip").text(helpStr.dhcpMtuTip);
+			break;
+		case WAN_TYPE_PPPoE:
+			$("#Type").text(helpStr.wanPppoe);
+			$("#TypeTip").text(helpStr.wanPppoeTip);
+			$("#MtuTip").text(helpStr.pppoeMtuTip);
+			break;
+		case WAN_TYPE_STATIC_IP:
+			$("#Type").text(helpStr.wanStatic);
+			$("#TypeTip").text(helpStr.wanStaticTip);
+			$("#MtuTip").text(helpStr.staticMtuTip);
+			break;
+		}
+	}
+
+	$("#SeniorSet").click(function(){
+		var expand = $(this).attr("data-expand");
+		if ("1" == expand){
+			$("#NetworkSenior").hide();
+			$(this).attr("data-expand", "0").text(label.openSenior);
+		}else{
+			$("#NetworkSenior").show();
+			$(this).attr("data-expand", "1").text(label.closeSenior);
+
+			if ("1" == wispStatus.enable){
+				$("#SeniorMacClone").hide();
+				$("#CloneParam").hide();
+			}else{
+				$("#SeniorMacClone").show();
+				$("#CloneParam").show();
+			}
+		}
+	});
+
+	function showWanState(state, stateStr){
+		if (state){// wan connected
+			$("i.wan-sta-icon").removeClass("icon_remind_line").addClass("icon_select_on");
+			$("p.status-detail").css("color","#575757").text(stateStr);
+		}else{// wan disconnected
+			$("i.wan-sta-icon").removeClass("icon_select_on").addClass("icon_remind_line");
+			$("p.status-detail").css("color","#F34947").text(stateStr);
+		}
+	}
+
+	//上网状态检测
+	function refreshWanState(){
+		var para = {
+			network:{wan_status:null}
+		};
+
+		apiGet(para, function(data){
+			if (currentState != stateman.current.name){
+				return;
+			}
+
+			var wanStatus = data[K_MODULE]["network"]["wan_status"];
+			var code = wanStatus["status_code"];
+			if ("1" == code){ // WAN口未连接
+				showWanState(false, label.wanError);
+			}else{
+				showWanState(true, label.wanOk);
+				initInternetState(wanStatus);
+			}
+
+			clearTimeout(statusHd);
+			statusHd = $.setTimeout(refreshWanState, 3000);
+		});
+	}
+
+	//上网方式检测
+	function getWanDetectionState(){
+		var para = {
+			network:{wan_detection:{action:"get"}}
+		};
+
+		apiGet(para, function(data){
+			var info = data[K_MODULE]["network"]["wan_detection"];
+
+			var status = info.running_status;
+			if ("2" == status){ // 上网方式检测完成
+				if ("1" !== info.status_code){ // wan口连接，检测成功
+					var wanType = info.protocol;
+					id("WanType").changeSel(wanType);
+					setWantype(wanType);
+					setHelpMsg(wanType);
+				}
+
+				closeLoading();
+			}else{
+				$.setTimeout(getWanDetectionState, 2000);
+			}
+		});
+	}
+
+	function getWanType(){
+		var para = {
+			network:{wan_detection:{action:"start"}}
+		};
+
+		showLoading(label.wanChecking);
+		apiGet(para, function(){
+			$.setTimeout(getWanDetectionState, 2000);
+		});
+	}
+
+	$("#Detect").click(function(){
+		$(".err-note").hide();
+		getWanType();
+	});
+
+	function initInternetState(wanStatus){
+		var status = wanStatus["internet_status"];
+		var protocol = wanStatus["protocol"];
+
+		if ("1" == status){
+				switch(protocol){
+				case WAN_TYPE_STATIC_IP: //静态IP
+					errorInfo = label.wanOk;
+					break;
+				case WAN_TYPE_PPPoE: //PPPOE
+					errorInfo = label.pppoeOk;
+					break;
+				case WAN_TYPE_DHCP: //DHCP
+					errorInfo = label.dhcpOk;
+					break;
+				default:
+					break;
+				}
+
+				$("i.wan-sta-icon").removeClass("icon_remind_line").addClass("icon_select_on");
+				$("p.status-detail").css("color","#575757");
+				$("p.status-detail").text(errorInfo);
+		}else{
+			/* status_code:
+			  0: okay,
+			  1: wan port not link,
+			  2: no wan address,
+			  3: gateway no response,
+			  4: no DNS address,
+			  5: DNS no response,
+			  6: custom DNS error,
+			  7: DHCP server no response,
+			  8: getting DHCP IP,
+			  9: PPPoE diaging,
+			  10: PPPoE server no response,
+			  646~649: PPPOE error,
+			  678: PPPOE server error,
+			  691: PPPOE account invalid,
+			  709: PPPOE password invalid
+			*/
+			var code = parseInt(wanStatus["status_code"], 10);
+
+			switch(protocol){
+			case "static":
+				errorInfo = label.staicIpErr;
+				break;
+			case "dhcp":
+				switch(code){
+				case 3:
+					errorInfo = label.wanGatewayErr;
+					break;
+				case 4:
+					errorInfo = label.wanDnsErr;
+					break;
+				case 5:
+					errorInfo = label.wanNetErr;
+					break;
+				case 6:
+					errorInfo = label.wanDnsCfgErr;
+					break;
+				case 7:
+				case 8:
+				default:
+					errorInfo = label.wanDhcpErr;
+					break;
+				}
+
+				break;
+			case "pppoe":
+				switch(code){
+				case 709:
+					errorInfo = label.pppoePwdErr;
+					break;
+				case 691:
+					errorInfo = label.pppoeAccountErr;
+					break;
+				case 678:
+					errorInfo = label.pppoeSrvErr;
+					break;
+				case 646:
+				case 647:
+				case 648:
+				case 649:
+					errorInfo = label.pppoeCodeL + code + label.pppoeCodeR;
+					break;
+				case 3:
+					errorInfo = label.wanGatewayErr;
+					break;
+				case 4:
+					errorInfo = label.wanDnsErr;
+					break;
+				case 5:
+					errorInfo = label.wanNetErr;
+					break;
+				case 6:
+					errorInfo = label.wanDnsCfgErr;
+					break;
+				case 9:
+					errorInfo = label.pppoeDialing;
+					break;
+				case 10:
+					errorInfo = label.pppoeNoResponse;
+					break;
+				}
+				break;
+			default:
+				console.log("Warning:protocol=" + protocol);
+			}
+
+			$("i.wan-sta-icon").removeClass("icon_select_on").addClass("icon_remind_line");
+			$("p.status-detail").css("color","#F34947");
+			$("p.status-detail").html(errorInfo);
+		}
+	}
+
+	refreshWanState();
+
+	/* err_code handle */
+	function errHandle(errNo)
+	{
+		var noteStr = "";
+
+		switch (errNo)
+		{
+		case E_NONE: // 没有错误
+			return false;
+		case E_INVARG: // 参数错误
+			noteStr = errStr.argsInvalid;
+			break;
+		case E_NETMASKNOTMATCH: // 网络号与掩码不匹配
+			noteStr = errStr.ipAddrMaskNotMatch;
+			break;
+		case E_NETLANSAME: // 网络号处于LAN口IP网段
+			noteStr = errStr.ipAddrLanWanConflict;
+			break;
+		case E_PPPOENAMEBLANK: // PPPoE账号不能为空
+			noteStr = errStr.usrNameEmpty;
+			break;
+		case E_PPPOENAMELEN: // PPPoE账号长度非法
+			noteStr = errStr.nameLenIllegal;
+			break;
+		case E_PPPOENAMEILLEGAL: // PPPoE账号包含非法字符
+			noteStr = errStr.usrNameInclSpeChar;
+			break;
+		case E_PPPOEPWDBLANK: // PPPoE密码不能为空
+			noteStr = errStr.pwdEmpty;
+			break;
+		case E_PPPOEPWDLEN: // PPPoE密码长度非法
+			noteStr = errStr.pwdLenIllegal;
+			break;
+		case E_PPPOEPWDILLEGAL: // PPPoE密码包含非法字符
+			noteStr = errStr.pwdInclSpeChar;
+			break;
+		case E_STATICIPBLANK: // 静态IP地址为空
+			noteStr = errStr.ipIsEmpty;
+			break;
+		case E_STATICIPILLEGAL: // 静态IP地址非法
+			noteStr = errStr.ipAddrErr;
+			break;
+		case E_STATICMASKBLANK: // 静态子网掩码为空
+			noteStr = errStr.maskEmpty;
+			break;
+		case E_STATICMASKILLEGAL: // 静态子网掩码非法
+			noteStr = errStr.maskErr;
+			break;
+		case E_STATICGWBLANK: // 静态网关为空
+			noteStr = errStr.gwIsEmpty;
+			break;
+		case E_STATICGWILLEGAL: // 静态网关非法
+			noteStr = errStr.gatewayErr;
+			break;
+		case E_STATICGWEQSTATICIP: // 默认网关与IP地址不能相同
+			noteStr = errStr.gatewayEqIp;
+			break;
+		case E_FDNSIPBLANK: // 首选DNS地址不能为空
+			noteStr = errStr.primDnsIsEmpty;
+			break;
+		case E_INVFDNSIP: // 非法首选DNS地址
+			noteStr = errStr.primDnsErr;
+			break;
+		case E_INVSDNSIP: // 非法备选DNS地址
+			noteStr = errStr.secDnsErr;
+			break;
+		case E_FDNSEQSDNS: // 备用DNS与默认DNS相同
+			noteStr = errStr.secDnsEqPriDns;
+			break;
+		case E_MACCLONEBLANK: // MAC克隆地址不能为空
+			noteStr = errStr.macCloAddrEmpty;
+			break;
+		case E_INVMACCLONEADDR: // 非法MAC克隆地址
+			noteStr = errStr.macCloAddrInval;
+			break;
+		case E_MACCLONECONFLICT: // MAC地址克隆冲突
+			noteStr = errStr.macCloAddrConflict;
+			break;
+		case E_INVMACZERO:// MAC地址全0
+			noteStr = errStr.macZeroErr;
+			break;
+		case E_INVMACBROAD:// MAC地址为广播地址
+			noteStr = errStr.macBroadErr;
+			break;
+		case E_INVMACGROUP:// MAC地址为组播地址
+			noteStr = errStr.macGroupErr;
+			break;
+		case E_INVMACFMT:// MAC地址格式错误
+			noteStr = errStr.invMacFmt;
+			break;
+		case E_MTUPPPOEBLANK: // PPPOE的MTU不能为空
+		case E_MTUDHCPBLANK: // DHCP的MTU不能为空
+		case E_MTUSTATICBLANK: // STATIC的MTU不能为空
+			noteStr = errStr.mtuEmpty;
+			break;
+		case E_INVMTUDHCP: // MTU非法
+		case E_INVMTUSTATIC: // MTU非法
+			noteStr = errStr.mtuInv;
+			break;
+		case E_INVMTUPPPOE: // MTU非法
+			noteStr = errStr.mtuPppoeInv;
+			break;
+		case E_PPPOESERVERNAMELEN: // PPPOE服务名称长度非法
+			noteStr = errStr.pppoeServTooLen;
+			break;
+		case E_INVWANMODE: // 上网模式值非法，仅支持DHCP,PPPoE,静态
+		case E_INVMACCLONEMODE: // 非法MAC克隆模式
+		default:
+			noteStr = errStr.unknownErr + errNo;
+			break;
+		}
+
+		showNote(noteStr);
+
+		return true;
+	}
+
+	// static IP set
+	function saveStatic(){
+		var wanConf = {};
+		var data = {};
+		var para = {};
+
+		para.network = {};
+		para.network.wan = wanConf;
+		wanConf.protocol = 'static';
+		wanConf.clone_mode = $("#CloneSwitch").attr("data-value");
+		wanConf.mac = $("#MacCloAddr").val();
+		wanConf.source_mac = wan.source_mac;
+
+		para.network.static = data;
+		data.mtu = $("#Mtu").val();
+		data.ip = $("#WanIpaddr").val();
+		data.netmask = $("#WanMask").val();
+		data.gateway = $("#WanGw").val();
+		data.dns_mode = "1";
+		data.dns_pri = $("#PrimDns").val();
+		data.dns_sec = $("#SecDns").val();
+
+		if (errHandle(checkNetworkIp(data.ip))){
+			return;
+		}
+
+		if (errHandle(checkNetworkMask(data.netmask))){
+			return;
+		}
+
+		if (errHandle(checkNetworkGateway(data.gateway, data.ip, data.netmask))){
+			return;
+		}
+
+		if (errHandle(checkNetworkDns(data.dns_pri, data.dns_sec))){
+			return;
+		}
+
+		if (errHandle(checkNetworkMtu(data.mtu, 576, 1500, "static"))){
+			return;
+		}
+
+		if (wanConf.clone_mode == "1"){
+			if (errHandle(checkNetworkMac(wanConf.mac))){
+				return;
+			}
+		}
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			var code = ret[ERR_CODE];
+			if (E_NONE == code){
+				var time = max(ret[K_MODULE].network.wan.wait_time, ret[K_MODULE].network.static.wait_time);
+				$.setTimeout(function(){
+					closeLoading();
+
+					clearTimeout(statusHd);
+					statusHd = $.setTimeout(refreshWanState, 3000);
+				}, time * 1000);
+			}else{
+				errHandle(code);
+				closeLoading();
+			}
+		});
+	}
+
+	// DHCP set
+	function saveDhcp(){
+		var wanConf = {};
+		var data = {};
+		var para = {};
+
+		para.network = {};
+		para.network.wan = wanConf;
+		wanConf.protocol = 'dhcp';
+		wanConf.clone_mode = $("#CloneSwitch").attr("data-value");
+		wanConf.mac = $("#MacCloAddr").val();
+		wanConf.source_mac = wan.source_mac;
+
+		para.network.dhcp = data;
+		data.mtu = $("#Mtu").val();
+		data.dns_mode = $("#Switch").attr("data-value");
+		data.dns_pri = $("#SeniorPrimDns").val();
+		data.dns_sec = $("#SeniorSecDns").val();
+
+		if (errHandle(checkNetworkMtu(data.mtu, 576, 1500, "dhcp"))){
+			return;
+		}
+
+		if (wanConf.clone_mode == "1"){
+			if (errHandle(checkNetworkMac(wanConf.mac))){
+				return;
+			}
+		}
+
+		if (data.dns_mode == "1"){
+			if (errHandle(checkNetworkDns(data.dns_pri, data.dns_sec))){
+				return;
+			}
+		}
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			var code = ret[ERR_CODE];
+			if (E_NONE == code){
+				var time = max(ret[K_MODULE].network.wan.wait_time, ret[K_MODULE].network.dhcp.wait_time);
+				$.setTimeout(function(){
+					closeLoading();
+
+					clearTimeout(statusHd);
+					statusHd = $.setTimeout(refreshWanState, 3000);
+				}, time * 1000);
+			}else{
+				errHandle(code);
+				closeLoading();
+			}
+		});
+	}
+
+	// PPPoE set
+	function savePppoe(){
+		var wanConf = {};
+		var data = {};
+		var para = {};
+
+		para.network = {};
+		para.network.wan = wanConf;
+		wanConf.protocol = 'pppoe';
+		wanConf.clone_mode = $("#CloneSwitch").attr("data-value");
+		wanConf.mac = $("#MacCloAddr").val();
+		wanConf.source_mac = wan.source_mac;
+
+		para.network.pppoe = data;
+		data.username = $("#PppoeUser").val();
+		data.password = $("#PppoePwd").val();
+		data.dial_mode = $("#PppoeDiaType").attr("data-value");
+		data.server = $("#PppoeServ").val();
+		data.mtu = $("#Mtu").val();
+		data.dns_mode = $("#Switch").attr("data-value");
+		data.dns_pri = $("#SeniorPrimDns").val();
+		data.dns_sec = $("#SeniorSecDns").val();
+
+		if (errHandle(checkUserName(data.username))){
+			return;
+		}
+
+		if (errHandle(checkPassWord(data.password))){
+			return;
+		}
+
+		if (errHandle(checkNetworkMtu(data.mtu, 576, 1492, "pppoe"))){
+			return;
+		}
+
+		if (wanConf.clone_mode == "1"){
+			if (errHandle(checkNetworkMac(wanConf.mac))){
+				return;
+			}
+		}
+
+		if (data.dns_mode == "1"){
+			if (errHandle(checkNetworkDns(data.dns_pri, data.dns_sec))){
+				return;
+			}
+		}
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			var code = ret[ERR_CODE];
+			if (E_NONE == code){
+				var time = max(ret[K_MODULE].network.wan.wait_time, ret[K_MODULE].network.pppoe.wait_time);
+				$.setTimeout(function(){
+					closeLoading();
+
+					clearTimeout(statusHd);
+					statusHd = $.setTimeout(refreshWanState, 3000);
+				}, time * 1000);
+			}else{
+				errHandle(code);
+				closeLoading();
+			}
+		});
+	}
+
+	function sendConfDatas(){
+		var selStr = $("#WanType").attr("data-value");
+
+		switch(selStr){
+		case WAN_TYPE_DHCP:
+			saveDhcp();
+			break;
+		case WAN_TYPE_PPPoE:
+			savePppoe();
+			break;
+		case WAN_TYPE_STATIC_IP:
+			saveStatic();
+			break;
+		default:
+			break;
+		}
+	}
+
+	$("#Save").click(sendConfDatas);
+
+	function checkNetworkIp(ip){
+		if (ip.length == 0){
+			return E_STATICIPBLANK;
+		}
+
+		if (checkIp(ip) != E_NONE){
+			return E_STATICIPILLEGAL;
+		}
+
+		return E_NONE;
+	}
+
+	function checkNetworkMask(mask){
+		if (mask.length == 0){
+			return E_STATICMASKBLANK;
+		}
+
+		if (checkMask(mask) != E_NONE){
+			return E_STATICMASKILLEGAL;
+		}
+
+		return E_NONE;
+	}
+
+	function checkNetworkGateway(gateway, ip, mask){
+		if (gateway.length == 0){
+			return E_STATICGWBLANK;
+		}
+
+		if (checkIp(gateway) != E_NONE){
+			return E_STATICGWILLEGAL;
+		}
+
+		if (!checkSameNetwork(gateway, ip, mask)){
+			return E_STATICGWILLEGAL;
+		}
+
+		if (gateway == ip){
+			return E_STATICGWEQSTATICIP;
+		}
+
+		return E_NONE;
+	}
+
+	function checkNetworkMtu(mtu, min, max, wanType){
+		if (mtu.length == 0){
+			if (wanType == "static"){
+				return E_MTUSTATICBLANK;
+			}else if (wanType == "dhcp"){
+				return E_MTUDHCPBLANK;
+			}else{
+				return E_MTUPPPOEBLANK;
+			}
+		}
+
+		if (!checkNumRange(mtu, max, min)){
+			if (wanType == "static"){
+				return E_INVMTUSTATIC;
+			}else if (wanType == "dhcp"){
+				return E_INVMTUDHCP;
+			}else{
+				return E_INVMTUPPPOE;
+			}
+		}
+
+		return E_NONE;
+	}
+
+	function checkNetworkDns(primDns, secDns){
+		if (primDns.length == 0){
+			return E_FDNSIPBLANK;
+		}
+
+		if (checkPrimDns(primDns) != E_NONE){
+			return E_INVFDNSIP;
+		}
+
+		if (checkSeDns(secDns) != E_NONE){
+			return E_INVSDNSIP;
+		}
+
+		if (primDns == secDns){
+			return E_FDNSEQSDNS;
+		}
+
+		return E_NONE;
+	}
+
+	function checkNetworkMac(mac){
+		if (mac.length == 0){
+			return E_MACCLONEBLANK;
+		}
+
+		var result = checkMac(mac);
+		if (result != E_NONE){
+			return result;
+		}
+
+		return E_NONE;
+	}
+
+	function checkUserName(username){
+		if (username == ""){
+			return E_PPPOENAMEBLANK;
+		}
+
+		if (checkStrLen(username, 32, 1) != E_NONE){
+			return E_PPPOENAMELEN;
+		}
+
+		return E_NONE;
+	}
+
+	function checkPassWord(password){
+		if (password == ""){
+			return E_PPPOEPWDBLANK;
+		}
+
+		if (checkStrLen(password, 32, 1) != E_NONE){
+			return E_PPPOEPWDLEN;
+		}
+
+		if (!checkIllegalChar(password)){
+			return E_PPPOEPWDILLEGAL;
+		}
+
+		return E_NONE;
+	}
+
+	function checkServer(server){
+		if (server.length == 0){
+			return E_VPN_SERVER_BLANK;
+		}
+
+		if (checkIp(server) != E_NONE && !checkDomain(server)){
+			return E_VPN_SERVER_ILLEGAL;
+		}
+
+		return E_NONE;
+	}
+})();
+</script>
+<div class="help hidden">
+	<ul class="help-content">
+		<li class="help-head">
+			<img class="app-icon" src="/luci-static/images/app-icon/internet.png?_=20170809165512" />
+			<span class="help-title">{%label.networkset%}</span>
+		</li>
+		<li id="Type" class="title"></li>
+		<li id="TypeTip" class="content"></li>
+		<li class="title">{%helpStr.mtu%}</li>
+		<li id="MtuTip" class="content"></li>
+	</ul>
+</div>
+<div class="head-con">
+	<img class="app-icon" src="/luci-static/images/app-icon/internet.png?_=20170809165512" />
+	<a href="javascript:history.go(-1);" class="head-btn-l">
+		<i class="head-btn icon icon_back"></i>
+		<span class="head-title">{%label.networkset%}</span>
+	</a>
+</div>
+<div class="set-con below-head">
+	<div id="WanSta" class="wan-sta">
+		<i class="wan-sta-icon"></i>
+		<p class="status-detail"></p>
+	</div>
+	<div class="btn-con detect">
+		<input id="Detect" class="btn" type="button" value="{%btn.autoDetect%}" />
+	</div>
+	<ul class="set-con">
+		<li class="text-con">
+			<label class="desc-lbl">{%label.wanType%}</label>
+			<span id="WanType" class="select">
+				<span class="value sel-value">{%label.wanDHCP%}</span>
+				<i class="tip icon_list-expansion"></i>
+			</span>
+		</li>
+	</ul>
+	<div id="WanPppoeSet" class="hidden">
+		<ul class="set-con">
+			<li class="text-con">
+				<label class="desc-lbl">{%label.diaType%}</label>
+				<span id="PppoeDiaType" class="select">
+					<span class="value sel-value">{%label.diaNormal%}</span>
+					<i class="tip icon_list-expansion"></i>
+				</span>
+			</li>
+		</ul>
+		<ul class="set-con">
+			<li class="text-con">
+				<label class="desc-lbl">{%label.pppoeUser%}</label>
+				<input id="PppoeUser" class="text hover" maxLength="32" value="" />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<li class="text-con">
+				<label class="desc-lbl">{%label.pppoePasswd%}</label>
+				<input id="PppoePwd" class="text hover" type="password" maxLength="32" value="" /><i class="tip icon-eye" data-value="0"></i>
+			</li>
+		</ul>
+		<ul class="set-con">
+			<li class="text-con">
+				<label class="desc-lbl">{%label.serName%}</label>
+				<input id="PppoeServ" class="text hover" placeholder="{%label.allowNoWrite%}" maxLength="64" value="" />
+			</li>
+		</ul>
+	</div>
+	<div id="WanStaticSet" class="hidden">
+		<ul class="set-con">
+			<li class="text-con">
+			<label class="desc-lbl">{%label.ipaddr%}</label>
+				<input id="WanIpaddr" class="text hover" maxLength="15" value="0.0.0.0" />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<li class="text-con">
+			<label class="desc-lbl">{%label.netmask%}</label>
+				<input id="WanMask" class="text hover" maxLength="15" value="0.0.0.0" />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<li class="text-con">
+			<label class="desc-lbl">{%label.gateway%}</label>
+				<input id="WanGw" class="text hover" maxLength="15" value="0.0.0.0" />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<li class="text-con">
+			<label class="desc-lbl">{%label.firstDns%}</label>
+				<input id="PrimDns" class="text hover" maxLength="15" value="0.0.0.0" />
+			</li>
+		</ul>
+		<ul class="set-con sec-dns">
+			<li class="text-con">
+			<label class="desc-lbl">{%label.secDns%}</label>
+				<input id="SecDns" class="text hover" maxLength="15" value="0.0.0.0" />
+			</li>
+		</ul>
+	</div>
+	<ul class="set-con">
+		<div class="switch-con high-top">
+			<label class="desc-title">{%label.seniorSet%}</label>
+			<div class="set-con-middle">
+				<span id="SeniorSet" data-expand="0" class="high-set">{%label.openSenior%}</span>
+			</div>
+		</div>
+	</ul>
+	<div id="NetworkSenior" class="hidden">
+		<ul class="set-con">
+			<li class="text-con">
+				<label class="desc-lbl">{%label.mtu%}</label>
+				<input id="Mtu" class="text hover" placeholder="" maxLength="4" value="" />
+			</li>
+		</ul>
+		<ul id="SeniorMacClone" class="set-con set-con-switch">
+			<p class="set-con-desc">
+				<label class="tip-lbl">{%label.cloneMac%}</label>
+				<span id="CloneSwitch" class="switch">
+					<i class="switch-circle icon_select_off"></i>
+				</span>
+			</p>
+		</ul>
+		<ul class="set-con" id="CloneParam">
+			<li class="text-con">
+				<label class="desc-lbl">{%label.nowCloMac%}</label>
+				<input id="MacCloAddr" class="text hover" maxLength="17" value="" />
+				<span class="mac-clone">{%label.macClone%}</span>
+			</li>
+		</ul>
+		<div id="DnsSet">
+			<ul id="SeniorSelfDns" class="set-con set-con-switch">
+				<p class="set-con-desc">
+					<label class="tip-lbl">{%label.sefDefDns%}</label>
+					<span id="Switch" class="switch">
+						<i class="switch-circle icon_select_off"></i>
+					</span>
+				</p>
+			</ul>
+			<div id="Param" class="hidden">
+				<ul class="set-con">
+					<li class="text-con">
+					<label class="desc-lbl">{%label.firstDns%}</label>
+						<input id="SeniorPrimDns" class="text hover" maxLength="15" value="0.0.0.0" />
+					</li>
+				</ul>
+				<ul class="set-con sec-dns">
+					<li class="text-con">
+					<label class="desc-lbl">{%label.secDns%}</label>
+						<input id="SeniorSecDns" class="text hover" maxLength="15" value="0.0.0.0" />
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="err-note hidden">
+		<i class="err-icon icon_remind_line"></i>
+		<p class="note-str"></p>
+	</div>
+	<div class="btn-con">
+		<input id="Save" class="btn" type="button" value="{%btn.save%}" />
+	</div>
+</div>

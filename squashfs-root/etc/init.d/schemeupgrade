@@ -1,0 +1,72 @@
+#!/bin/sh /etc/rc.common
+
+######################################################################
+# Copyright (C) 2016. Shanghai Feixun Communication Co.,Ltd.
+#
+# DISCREPTION   : schemeupgrade init 脚本
+# AUTHOR        : maoyuan.li <maoyuan.li@phicomm.com.cn>
+# CREATED DATE  : 2016-06-02
+# MODIFIED DATE :
+######################################################################
+
+START=90
+STOP=90
+
+start()
+{
+	local up_scheme sw_ver sw_desc sw_desc_gbk pubtime filesize firmurl retval
+	config_load schemeupgrade
+	config_get up_scheme config up_scheme
+	config_get sw_ver config sw_ver
+	config_get sw_desc config sw_desc
+	config_get sw_desc_gbk config sw_desc_gbk
+	config_get pubtime config pubtime
+	config_get filesize config filesize
+	config_get firmurl config firmurl
+
+	if [ "${up_scheme}" = "1" ]; then
+		uci set schemeupgrade.config.up_scheme="0"
+		uci commit schemeupgrade
+		chmod +x /lib/loadbin.sh
+		/lib/loadbin.sh ${firmurl} ${filesize}
+		retval=$?
+		time=0
+		while [ $time -le 2 ] && [ "${retval}" = "1" ]
+		do
+			/lib/loadbin.sh ${firmurl} ${filesize} > /dev/null
+			retval=$?
+			time=$(($time+1))
+			sleep 5
+		done
+		if [ "${retval}" = "1" ]; then
+			exit 1
+		fi
+		imgdir="/tmp/""${firmurl##*/}"
+		sleep 1; /etc/init.d/uhttpd stop; sleep 1; /usr/sbin/manual_upgrade -u ${imgdir}
+	elif [ "${up_scheme}" = "3" ]; then
+		local wanmac=$(eth_mac read wan)
+		local sw_now_ver=`uci get system.system.fw_ver`
+		pubtime=`date -d @${pubtime} "+%Y-%m-%d %H:%M:%S"`
+		sed -i -e "s/#sw_now_ver.*;/#sw_now_ver\"\).html\(\"${sw_now_ver}\"\);/" /www/luci-static/bootstrap/js/up_utf8.js
+		sed -i -e "s/#sw_new_ver.*;/#sw_new_ver\"\).html\(\"${sw_ver}\"\);/" /www/luci-static/bootstrap/js/up_utf8.js
+		sed -i -e "s/#pubtime.*;/#pubtime\"\).html\(\"${pubtime}\"\);/" /www/luci-static/bootstrap/js/up_utf8.js
+		sed -i -e "s/#sw_now_ver.*;/#sw_now_ver\"\).html\(\"${sw_now_ver}\"\);/" /www/luci-static/bootstrap/js/up_gbk.js
+		sed -i -e "s/#sw_new_ver.*;/#sw_new_ver\"\).html\(\"${sw_ver}\"\);/" /www/luci-static/bootstrap/js/up_gbk.js
+		sed -i -e "s/#pubtime.*;/#pubtime\"\).html\(\"${pubtime}\"\);/" /www/luci-static/bootstrap/js/up_gbk.js
+		sed -i -e "s/#sw_desc.*;/#sw_desc\"\).html\(\"${sw_desc}\"\);/" /www/luci-static/bootstrap/js/up_utf8.js
+		sed -i -e "s/#sw_gbk_desc.*;/#sw_gbk_desc\"\).html\(\"${sw_desc_gbk}\"\);/" /www/luci-static/bootstrap/js/up_gbk.js
+		service_start /usr/sbin/schemeupgrade $wanmac
+	elif [ "${up_scheme}" = "10" ]; then
+		service_start /usr/sbin/schemeupgrade
+	fi
+}
+
+stop()
+{
+		service_start /usr/sbin/schemefinish
+}
+restart()
+{
+	stop
+	start
+}

@@ -1,0 +1,9 @@
+Package: kmod-ipt-ipset
+Version: 3.10.14+6.29-1
+Depends: kernel (=3.10.14-1-b111ad83351afe639183d8564c3857ca), kmod-ipt-core, kmod-nfnetlink, kmod-nfnetlink-log, kmod-nfnetlink-queue
+Source: package/network/utils/ipset
+Section: kernel
+Maintainer: Jo-Philipp Wich <jow@openwrt.org>
+Architecture: ramips_1004kc
+Installed-Size: 191032
+Description:  unknown

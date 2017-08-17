@@ -1,0 +1,267 @@
+@media screen and (min-device-width:1920px){
+	div.head{
+		height:80px;
+	}
+	div.left-logo{
+		left:50px;
+		top:26px;
+	}
+	div.left-logo img.logo{
+		width:190px;
+		height:28px;
+	}
+	div.left-logo span.brand{
+		font-size:26px;
+		line-height:28px;
+	}
+	i.guide-icon{
+		right:14px;
+		top:18px;
+		font-size:40px;
+	}
+	li.step{
+		font-size:18px;
+	}
+	li.text-con{
+		width:400px;
+	}
+	label.desc-lbl{
+		width:146px;
+		line-height:28px;
+		font-size:18px;
+	}
+	li.text-con input.text{
+		width:220px;
+		height:46px;
+		line-height:46px;
+		font-size:18px;
+	}
+	li.text-con input.text-eye{
+		width:208px;
+	}
+	i.tip{
+		line-height:46px;
+		font-size:28px;
+	}
+	div.guide-btn-con{
+		width:400px;
+	}
+	input.btn{
+		width:400px;
+		height:46px;
+		line-height:46px;
+		font-size:18px;
+	}
+	input.guide-btn{
+		width:180px;
+	}
+	div.err-note{
+		width:400px;
+		margin:15px auto;
+	}
+	i.err-icon{
+		font-size:26px;
+	}
+	p.note-str{
+		font-size:16px;
+		line-height:18px;
+		width:372px;
+	}
+	li.text-con span.select{
+		width:220px;
+		height:46px;
+		line-height:46px;
+		font-size:18px;
+	}
+	span.select span.sel-value{
+		width:235px;
+		line-height:46px;
+		height:46px;
+	}
+	ul.sel-opts-ul{
+		width:250px;
+		font-size:18px;
+		max-height:300px;
+	}
+	ul.sel-opts-ul li.option{
+		border-bottom:1pxsolid#DDD;
+		height:46px;
+		line-height:46px;
+		font-size:18px;
+	}
+	p.set-con-desc{
+		width:400px;
+	}
+	p.desc-tetail{
+		font-size:16px;
+	}
+	label.title-desc-lbl{
+		font-size:18px;
+	}
+	ul.right-tool{
+		right:40px;
+		top:20px;
+	}
+	li.tool-item i.icon{
+		font-size:40px;
+	}
+	li.help-head{
+		margin-top:70px;
+	}
+	div.help-icon{
+		width:80px;
+		height:80px;
+	}
+	i.head-icon{
+		font-size:60px;
+		line-height:80px;
+	}
+	span.help-title{
+		font-size:24px;
+	}
+	ul.help-content li.title{
+		font-size:20px;
+	}
+	ul.help-content li.content{
+		font-size:18px;
+	}
+	ul.help-content li.summary{
+		font-size:18px;
+	}
+	.app-icon{
+		width:64px;
+		height:64px;
+	}
+	.app-icon i.icon{
+		font-size:44px;
+		line-height:64px;
+	}
+	div.head-con{
+		height:94px;
+		line-height:94px;
+	}
+	span.head-title{
+		font-size:20px;
+	}
+	a.head-btn-l{
+		bottom:30px;
+	}
+	i.head-btn{
+		font-size:28px;
+	}
+	label.tip-lbl,
+	span.state{
+		line-height:24px;
+		font-size:18px;
+	}
+	span.switch{
+		width:48px;
+		border-radius:24px;
+		height:24px;
+		line-height:24px;
+		margin-right:154px;
+	}
+	span.switch i.switch-circle{
+		width:20px;
+		height:20px;
+	}
+	span.radio label{
+		font-size:18px;
+	}
+	li.set-con-radio{
+		width:400px;
+	}
+	label.radio-title{
+		font-size:18px;
+	}
+	label.desc-title{
+		font-size:20px;
+	}
+	div.alert{
+		width:400px;
+		margin: 360px auto;
+	}
+	p.alert-title{
+		font-size:20px;
+	}
+	p.alert-tip{
+		font-size:18px;
+		line-height:28px;
+	}
+	input.confirm-btn{
+		width:175px;
+		line-height:40px;
+		font-size:20px;
+	}
+	div.progress-bar-con{
+		width:460px;
+	}
+	div.progress-bar{
+		width:400px;
+		font-size:18px;
+	}
+	p.progress-bar-tip{
+		font-size:18px;
+		width:400px;
+	}
+	div.loading{
+		width:380px;
+		min-height: 180px;
+		margin: 360px auto;
+	}
+	div.outer-circle{
+		margin:35px auto;
+	}
+	p.loading-tip{
+		font-size:18px;
+	}
+	span.desc-lbl{
+		font-size:18px;
+	}
+	ul.set-con{
+		margin:18px 50px 18px;
+	}
+	div.image-con img.left-image {
+		height:374px;
+		width:400px;
+	}
+	div.left-image-con div.image-con {
+		margin-right:74px;
+	}
+	h1.guide-title {
+		font-size:40px;
+		margin-bottom:30px;
+	}
+	div.right-set-con ul.set-con,
+	div.guide-btn-con,
+	div.right-set-con div.err-note {
+		margin-left:74px;
+	}
+	div.guide{
+		top:80px;
+		bottom:280px;
+	}
+}
+
+@media screen and (min-device-width:1920px) and (max-width:1300px){
+	ul.right-tool{
+		top:105px;
+		right:10px;
+	}
+	li.tool-item{
+		display:block;
+		width:40px;
+		height:40px;
+		border-radius:50%;
+		background-color:#FF8000;
+		margin-bottom:22px;
+		text-align:center;
+	}
+	li.tool-item i.icon{
+		color:#fff!important;
+		line-height:40px;
+	}
+	li.disabled{
+		background-color:#B2B2B2!important;
+	}
+}

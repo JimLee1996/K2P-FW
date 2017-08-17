@@ -1,0 +1,157 @@
+<style type="text/css">
+	div.wisp-auto{
+		width:354px;
+		height:260px; 
+		overflow:hidden;
+		border-radius:5px;
+		background-color:#FFF;
+		margin:210px auto;
+		position:relative;
+	}
+	i.close-btn{
+		top:7px;
+		right:10px;
+	}
+	ul.pwd-tip{
+		margin:20px auto 10px;
+	}
+	div.pwd-err{
+		position:absolute;
+		margin:0px 27px;
+	}
+	div.pwd-btn{
+		margin:10px 27px;
+	}
+	input.btn-width{
+		width: 254px;
+	}
+	/*1080p适配*/
+	@media screen and (min-device-width:1920px){
+		div.wisp-auto {
+			width: 454px;
+			height: 300px;
+			margin: 320px auto;
+		}
+		i.close-btn {
+			top: 2px;
+		}
+		input.btn-width {
+			width: 354px;
+		}
+	}
+</style>
+<script type="text/javascript">
+(function(){
+	function showNote(noteStr){
+		$("#PwdErr").show();
+		$("#PwdTip").html(noteStr);
+	}
+
+	$("#SaveWisp").click(function(){
+		var extendModetype,extendPwdtype,extendBand,extendMac;
+		extendModetype = $("#WispModeType").val();
+		extendPwdtype = $("#WispPwdType").val();
+		extendBand = $("#WispBand").val();
+		extendMac = $("#WispMac").val();
+
+		var data = {};
+		var para = {};
+		para.wisp = {};
+		para.wisp.config = data;
+		data.enable = "1";
+		data.band = extendBand;
+		data.bssid = extendMac;
+		data.ssid = $("#SsidNameAuto").val();
+		data.password = $("#SsidPwdAuto").val();
+		data.safe_mode = extendModetype;
+		data.encryption = extendPwdtype;
+		showConfirm(label.openExtend, function(choose){
+			if (choose){
+				showLoading(label.saving);
+				apiSet(para, function(ret){
+					var code = ret[ERR_CODE];
+					if (E_NONE == code){
+						showProgressBar(label.saveOpenExtend, label.rebooting, ROUTER.time.reboot, function(){
+							window.location.reload();
+						});
+
+						$.setTimeout(function(){
+							// 检测LAN是否可以连接DUT
+							lanDetecting(function(){
+								window.location.reload();
+							});
+						}, ROUTER.time.detectDelay);
+					}else{
+						closeLoading();
+						errHandle(code);
+					}
+				});
+			}
+		});
+	});
+
+	function errHandle(code)
+	{
+		switch(code){
+		case E_NONE:
+			break;
+		case E_WISPSSIDBLANK:
+			showNote(errStr.ssidEmpty);
+			break;
+		case E_WISPSSIDLEN:
+			showNote(errStr.ssidLength);
+			break;
+		case E_WISPSSIDILLEGAL:
+			showNote(errStr.ssidInclSpeChar);
+			break;
+		case E_WISPPSKPWBLANK:
+			showNote(errStr.wifiPwdEmpty);
+			break;
+		case E_WISPPSKPWLEN:
+			showNote(errStr.wifiPwdLengthErr);
+			break;
+		case E_WISPPSKPWILLEGAL:
+			showNote(errStr.ssidPwdInclSpeChar);
+			break;
+		case E_WISPNOTFOUND:
+			showNote(errStr.wispNotFound);
+			break;
+		default:
+			showNote(errStr.unknownErr + code);
+			break;
+		}
+
+		return true;
+	}
+})();
+</script>
+<div class="wisp-auto">
+	<input class="hidden" id="WispModeType" value="" />
+	<input class="hidden" id="WispPwdType" value="" />
+	<input class="hidden" id="WispBand" value="" />
+	<input class="hidden" id="WispMac" value="" />
+	<p class="alert-title">{%label.wisp%}</p>
+	<i class="tip icon_close color-red close-btn"></i>
+	<div class="set-con">
+		<ul class="set-con pwd-tip">
+			<li class="text-con">
+				<label class="desc-lbl">{%label.networkName%}</label>
+				<input class="text ime-mode-n hover" maxLength="32" id="SsidNameAuto" value="" />
+			</li>
+		</ul>
+		<ul id="WispAutoPwd" class="set-con pwd-tip">
+			<li class="text-con">
+				<label class="desc-lbl">{%label.networkPwd%}</label>
+				<input class="text ime-mode-n hover" type="password" maxLength="64" id="SsidPwdAuto" value="" />
+				<i class="tip icon-eye" data-value="0"></i>
+			</li>
+		</ul>
+		<div class="err-note hidden pwd-err" id="PwdErr">
+			<i class="err-icon icon_remind_line"></i>
+			<p class="note-str" id="PwdTip"></p>
+		</div>
+		<div class="btn-con pwd-btn">
+			<input id="SaveWisp" class="btn btn-width" type="button" value="{%btn.startExtend%}" />
+		</div>
+	</div>
+</div>

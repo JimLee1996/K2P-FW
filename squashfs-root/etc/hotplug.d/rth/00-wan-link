@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ "$EVENT" = "wan_link" ]; then
+	if [ "$ACTION" = "up" ]; then
+		logger "wan up!"
+	elif [ "$ACTION" = "down" ]; then
+		logger "wan down!"
+	fi
+fi

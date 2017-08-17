@@ -1,0 +1,6 @@
+/usr/lib/lua/luci/data/lan.lua
+/etc/hotplug.d/iface/95-lanset
+/www/luci-static/images/app-icon/lan.png
+/usr/lib/lua/luci/view/pc/lanSet.htm
+/usr/lib/lua/luci/view/h5/lanSet.htm
+/usr/lib/lua/luci/controller/admin/lan.lua

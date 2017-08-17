@@ -1,0 +1,10 @@
+Package: openssl-util
+Version: 1.0.2-2
+Depends: libc, libopenssl
+Source: package/libs/openssl
+License: SSLEAY OPENSSL
+LicenseFiles: LICENSE
+Section: utils
+Architecture: ramips_1004kc
+Installed-Size: 195939
+Description:  unknown

@@ -1,0 +1,685 @@
+<style type="text/css">
+	a.head-btn-l:active{
+		color:#FFF !important;
+		background-color:#000;
+		opacity:0.08;
+	}
+	div.net-list{
+		position:absolute;
+		top:1.111rem;
+		bottom:3.405rem;
+		font-size:0.5rem;
+		width:100%;
+		background-color:#1FB470;
+	}
+	div.net-speed{
+		position:absolute;
+		height:1.259rem;
+		bottom:0;
+		color:#FFFFFF;
+		width:100%;
+	}
+	div.topo-status{
+		font-size:0;
+		position:absolute;
+		top:0;
+		bottom:1.259rem;
+		width:100%;
+		text-align:center;
+	}
+	.vertical-center{
+		position:relative;
+		display:inline-block;
+		vertical-align:middle;
+		margin:auto;
+		height:5.212rem;
+		text-align:center;
+	}
+	div.hidden{
+		display:none;
+	}
+	div.topo-status:after{
+		content:'';
+		display:inline-block;
+		vertical-align:middle;
+		height:100%;
+	}
+	div.net-img{
+		width:5.212rem;
+		color:#FFFFFF;
+		border-radius:50%;
+		border:1px solid rgba(146,218,185,0.5);
+	}
+	div.noconnect-img{
+		width:5.212rem;
+		color:#FFFFFF;
+		border-radius:50%;
+		border:1px solid rgba(243,117,117,0.5);
+		background-color:#EE595B !important;
+	}
+	div.wisp-img{
+		width:100%;
+		background-color:#1FB0B5;
+	}
+	div.wisp-connect{
+		position:relative;
+		width:12%;
+		height:1px;
+		margin:0 auto;
+		top:3.2rem;
+		background-color:#F0F0F0;
+	}
+	i.wisp-left{
+		display:inline-block;
+		background:url(/luci-static/images/wisp_h5.png?_=20170809165512) no-repeat center;
+		background-size:contain;
+		width:20%;
+		height:2.3rem;
+		margin-top:1.8rem;
+		left:20%;
+		position:absolute;
+	}
+	i.wisp-right{
+		display:inline-block;
+		background:url(/luci-static/images/wisp_h5.png?_=20170809165512) no-repeat center;
+		background-size:contain;
+		width:20%;
+		height:2.3rem;
+		margin-top:1.8rem;
+		right:20%;
+		position:absolute;
+	}
+	.bg-skyblue{
+		background-color:#1FB0B5 !important;
+	}
+	span.wisp-name{
+		position:relative;
+		width:100%;
+		top:2.6rem;
+		font-size:0.4rem;
+		overflow:hidden;
+		text-overflow:ellipsis;
+		white-space:nowrap;
+		display:inline-block;
+		color:#FFFFFF;
+	}
+	.net-noconnect{
+		background-color:#EE595B !important;
+		color:#FFFFFF !important;
+	}
+	div.speed-state{
+		font-size:0.926rem;
+		float: left;
+		width:50%;
+		height:1.259rem;
+		position: relative;
+	}
+	div.speed-state:first-child{
+		background:-webkit-linear-gradient(left, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.1));
+	}
+	div.speed-state i.icon{
+		left:0.6rem;
+		margin-top: 0.1rem;
+		color:#FFF;
+		font-size:0.6rem;
+		display:inline-block;
+		position:absolute;
+	}
+	div.speed-num{
+		right: 0.8rem;
+		position:absolute;
+		font-family:icoset,sans-serif;
+	}
+	span.speed-size{
+		font-size:0.37rem;
+	}
+	ul.wifi-list{
+		position:absolute;
+		bottom:0;
+		font-size:0;
+		width:100%;
+		padding:0.45rem 0;
+		text-align:center;
+	}
+	li.wifi-item{
+		display:inline-block;
+		width:33%;
+	}
+	.color-blue{
+		color:#3A7DD2;
+	}
+	.color-green{
+		color:#14945B;
+	}
+	.color-gray{
+		color:#9C9C9C;
+	}
+	li.wifi-item div.wifi-icon{
+		width:1.852rem;
+		height:1.852rem;
+		border-radius:50%;
+		margin:0.1rem auto 0.1rem;
+		border:1px solid #EEE;
+		position: relative;
+	}
+	li.wifi-item i.icon{
+		line-height:1.852rem;
+		font-size:1.2rem;
+		vertical-align:middle;
+	}
+	div.wifi-icon i.band-icon{
+		bottom:0.3rem;
+		right:0.25rem;
+		font-size:0.6rem;
+		position:absolute;
+	}
+	li.wifi-item p{
+		color:#9C9C9C;
+		height:0.45rem;
+		font-size:0.333rem;
+	}
+	span.connect-num{
+		position:absolute;
+		top:0.15rem;
+		right:0;
+		display:inline-block;
+		width:0.5rem;
+		height:0.5rem;
+		border-radius:50%;
+		background-color:#FB1F1F;
+		color:#FFF;
+		font-size:0.4rem;
+		line-height:0.5rem;
+	}
+	ul.list{
+		margin:0 0.5rem;
+	}
+	a.list-item{
+		text-decoration:none;
+	}
+	li.list-item{
+		font-size:0;
+		padding:0.25rem 0 0;
+		overflow:hidden;
+		border-bottom:1px solid #E9E9E9;
+	}
+	a.list-item:last-child li.list-item{
+		border-bottom:0;
+	}
+	div.left-con{
+		float:left;
+		width:20%;
+	}
+	i.verdor-icon{
+		font-size:1.25rem;
+		display:inline-block;
+		width:1.25rem;
+		height:1.25rem;
+	}
+	div.right-con{
+		float:right;
+		width:80%;
+	}
+	a:last-child div.right-con{
+		border-bottom:0;
+	}
+	p.list-con-l{
+		font-size:0;
+		float:left;
+	}
+	p.list-con-r{
+		color:#949494;
+		line-height:1.25rem;
+		font-size:0.4rem;
+		float:right;
+		max-width:2rem;
+		overflow:hidden;
+		white-space:nowrap;
+		text-overflow:ellipsis;
+	}
+	span.list-con1{
+		color:#575757;
+		font-size:0.5rem;
+	}
+	span.self{
+		margin-left:0.2rem;
+		font-size:0.4rem;
+		color:#1389E7;
+		vertical-align:top;
+	}
+	span.list-con1::after{
+		content:"\A";
+		white-space:pre;
+	}
+	span.list-con2{
+		color:#949494;
+		font-size:0.4rem;
+	}
+	span.speed-con{
+		display:inline-block;
+		width:2.5rem;
+	}
+	span.speed-con i{
+		margin-right:0.1rem;
+	}
+	.icon_speed_up{
+		color:#1499E6;
+	}
+	.icon_speed{
+		color:#1FB66F;
+	}
+	span.mac{
+		margin-left:0.2rem;
+	}
+	div.below-head{
+		margin-top: 3.481rem !important;
+	}
+	div.bg-connect{
+	  background-color:#1FB470;
+	}
+	div.bottom-none{
+		border-bottom-width:0;
+	}
+	i.router{
+		display:inline-block;
+		background:url(/luci-static/images/router.png?_=20170809165512) no-repeat;
+		background-size:contain;
+		width:3.9rem;
+		height:3.9rem;
+		top:2.1rem;
+		left:1.25rem;
+		position: absolute;
+	}
+	i.signal{
+		display:inline-block;
+		background:url(/luci-static/images/signal.gif?_=20170809165512) no-repeat;
+		background-size:contain;
+		width:2.3rem;
+		height:2.3rem;
+		margin-top: 0.6rem;
+	}
+	.connect-no{
+		display:inline-block;
+		margin-top: 2.1rem;
+		font-size: 0.5rem;
+		font-style: normal;
+	}
+	.connect-btn{
+		width:2.4rem;
+		height:0.8rem;
+		top:3.4rem;
+		left:1.406rem;
+		font-size: 0.45rem;
+		line-height:0.8rem;
+		font-style: normal;
+		background-color:#E35456;
+		display:inline-block;
+		color:#FFF;
+		border: 0;
+		border-radius: 0.185rem;
+		position: absolute;
+	}
+	span.switch{
+		font-size:0;
+		margin-top:0.22rem;
+	}
+	div.small-height{
+		height:2.37rem;
+	}
+</style>
+<script type="text/javascript">
+(function(){
+	<%
+		local para = {
+			device_manage = {client_list = {}},
+			device = {info = {}},
+			wireless = {smart_connect = {}, wifi_2g_config = {}, wifi_5g_config = {}},
+			network = {wan_status = {}},
+			wisp = {config = {}}
+		}
+		local result = tpl_get_data(para, true)
+		local remote_ip = luci.http.getenv("REMOTE_ADDR")
+	-%>
+
+	var info = <%=result%>;
+	var curIp = "<%=remote_ip%>";
+	var device = info[K_MODULE].device.info;
+	var wifi2G = info[K_MODULE].wireless.wifi_2g_config;
+	var wifi5G = info[K_MODULE].wireless.wifi_5g_config;
+	var wisp = info[K_MODULE].wisp.config;
+	var clients = info[K_MODULE].device_manage.client_list;
+
+	var product = device.model;
+	var ssid2G = wifi2G.ssid;
+	var wifiEnable2G = wifi2G.enable;
+	var ssid5G = wifi5G.ssid;
+	var wifiEnable5G = wifi5G.enable;
+	var wispStatus = wisp.enable;
+	var wispBand = wisp.band;
+	var wispSsid = wisp.ssid;
+	var currentState = stateman.current.name;
+
+	function speedUnit(speed){
+		var netSpeed = netSpeedTrans(speed);
+		var unit = netSpeed.split(speedNum(speed));
+		return unit[1];
+	}
+	function speedNum(speed){
+		var netSpeed = netSpeedTrans(speed);
+		var value = netSpeed.replace(/[^0-9]/ig,"");
+		return value;
+	}
+
+	function initWifiState(){
+		if (0 == wifiEnable2G && 0 == wifiEnable5G){	//无线关闭
+			$("i.signal").hide();
+		}
+	}
+
+	function refreshStatus(){
+		var data = {
+			device_manage:{client_list:null},
+			network:{"wan_status":null}
+		};
+
+		apiGet(data, function(result){
+			if (currentState != stateman.current.name){
+				return;
+			}
+
+			var errNo = result[ERR_CODE];
+
+			if (E_NONE == errNo){
+				ret = result[K_MODULE];
+				clients = ret.device_manage.client_list;
+				initList(clients);
+			}else{
+				console.log(result);
+			}
+
+			var internetStatus = ret.network.wan_status;
+
+			if ("0" == internetStatus.internet_status){
+				//不能上网
+				$("#WirelessStatus").addClass("hidden");
+				$("#WispStatus").addClass("hidden");
+				$("#NotConnct").removeClass("hidden");
+				$("div.head-con").removeClass("bg-skyblue");
+				$("div.net-list").removeClass("bg-skyblue");
+				$("div.head-con").addClass("net-noconnect");
+				$("div.net-list").addClass("net-noconnect");
+			}else{
+				if ("1" == wispStatus){
+					//开启无线扩展
+					$("#WirelessStatus").addClass("hidden");
+					$("#NotConnct").addClass("hidden");
+					$("#WispStatus").removeClass("hidden");
+					$("div.head-con").removeClass("net-noconnect");
+					$("div.net-list").removeClass("net-noconnect");
+					$("div.head-con").addClass("bg-skyblue");
+					$("div.net-list").addClass("bg-skyblue");
+					$("#WispSsid").text(wispSsid);
+					if ("0" == wispBand){
+						$("#RouteSsid").text(ssid2G);
+					}else{
+						$("#RouteSsid").text(ssid5G);
+					}
+				}else{
+					//未开启无线扩展
+					$("#NotConnct").addClass("hidden");
+					$("#WispStatus").addClass("hidden");
+					$("#WirelessStatus").removeClass("hidden");
+					$("div.head-con").removeClass("bg-skyblue");
+					$("div.net-list").removeClass("bg-skyblue");
+					$("div.head-con").removeClass("net-noconnect");
+					$("div.net-list").removeClass("net-noconnect");
+				}
+			}
+
+			$("#UpSpeed").text(speedNum(internetStatus.upload_speed));
+			$("#DownSpeed").text(speedNum(internetStatus.download_speed));
+			$("#UpUnit").text(speedUnit(internetStatus.upload_speed));
+			$("#DownUnit").text(speedUnit(internetStatus.download_speed));
+
+			var netSet = (1 == wispStatus) ? "wisp" : "networkset";
+			id("Connect").onclick = function(){
+				stateman.go(netSet);
+			};
+
+			$.setTimeout(refreshStatus, 2000);
+		});
+	}
+
+	function initOnlineEntry(client, idx){
+		var vendor;
+		if(client.brand){
+			vendor = "icon_" + getAlias(client.brand);
+		}else{
+			vendor = "icon_" + getVendor(client.mac);
+		}
+
+		var devName = htmlEscape(getStrInMax(client.name, 18));
+		var uRate = netSpeedTrans(client.upload_speed);
+		var dRate = netSpeedTrans(client.download_speed);
+		var switchButton = "";
+
+		if (client.ip == curIp){
+			devName += '<span class="self">{%label.selfHost%}</span>';
+			switchButton += '<span class="switch internet-switch hidden" data-index="' + idx +'"><i class="switch-circle"></i></span>';
+		}else{
+			switchButton += '<span class="switch internet-switch" data-index="' + idx +'"><i class="switch-circle"></i></span>';
+		}
+
+		return '<a class="list-item"><li class="list-item">' +
+			'<div class="left-con"><i class="verdor-icon ' + vendor + '"></i></div>' +
+			'<div class="right-con">' +
+				'<p class="list-con-l">' +
+					'<span class="list-con1">' + devName + '</span>'+
+					'<span class="list-con2 speed-con"><i class="icon_speed_up"></i><span>' + uRate + '</span></span>' +
+					'<span class="list-con2 speed-con"><i class="icon_speed"></i><span>' + dRate + '</span></span>' +
+				'</p>' +
+				'<p class="list-con-r">' + switchButton + '</p>' +
+			'</div>' +
+		'</li></a>';
+	}
+
+	function initList(clients){
+		var len = clients.length;
+		var List2GObj = $("#List2G");
+		var List5GObj = $("#List5G");
+		var ListVisObj = $("#ListVis");
+		List2GObj.empty();
+		List5GObj.empty();
+		ListVisObj.empty();
+		var List2GLength = 0;
+		var List5GLength = 0;
+		var ListVisLength = 0;
+
+		for (var i = 0; i < len; i++){
+			if (0 == clients[i].online_status){
+				// Don't show offline client
+				continue;
+			}
+
+			if (1 == clients[i].device_type) {
+				List2GObj.append(initOnlineEntry(clients[i], i));
+				$("#List2GTitle").show();
+				List2GLength++;
+			}else if (2 == clients[i].device_type) {
+				List5GObj.append(initOnlineEntry(clients[i], i));
+				$("#List5GTitle").show();
+				List5GLength++;
+			}else if (3 == clients[i].device_type) {
+				ListVisObj.append(initOnlineEntry(clients[i], i));
+				$("#ListVisTitle").show();
+				ListVisLength++;
+			}
+		}
+
+		if (0 == List2GLength){
+			$("#Connect2G").addClass("invisible");
+		}else{
+			$("#Connect2G").removeClass("invisible").text(List2GLength);
+		}
+
+		if (0 == List5GLength){
+			$("#Connect5G").addClass("invisible");
+		}else{
+			$("#Connect5G").removeClass("invisible").text(List5GLength);
+		}
+
+		if (0 == ListVisLength){
+			$("#ConnectVis").addClass("invisible");
+		}else{
+			$("#ConnectVis").removeClass("invisible").text(ListVisLength);
+		}
+
+		initSwitchList("span.internet-switch", onNetSwitchClick);
+	}
+
+	function initSwitchList(filter, callback){
+		$(filter).each(function(){
+			var idx = parseInt($(this).attr("data-index"), 10);
+			var state = clients[idx].internet_enable;
+			if (1 == state){
+				$(this).attr("data-value", "1").css({textAlign: "right", backgroundColor: "#FE9818"});
+			}else{
+				$(this).attr("data-value", "0").css({textAlign: "left", backgroundColor: "#B2B2B2"});
+			}
+		}).click(function(){
+			var idx = parseInt($(this).attr("data-index"), 10);
+			var state = $(this).attr("data-value");
+
+			if (0 == state){
+				$(this).attr("data-value", "1").css({textAlign: "right", backgroundColor: "#FE9818"});
+				callback && callback(1, idx);
+			}else{
+				$(this).attr("data-value", "0").css({textAlign: "left", backgroundColor: "#B2B2B2"});
+				callback && callback(0, idx);
+			}
+		});
+	}
+
+	function onNetSwitchClick(val, idx){
+		var data = {};
+		var para = {};
+		para.device_manage = {};
+		para.device_manage.client_list = data;
+		data.mac = clients[idx].mac;
+		data.ip = clients[idx].ip;
+		data.internet_enable = val;
+		data.name = clients[idx].name;
+		data.upload_limit = clients[idx].upload_limit;
+		data.download_limit = clients[idx].download_limit;
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			$.setTimeout(function(){
+				closeLoading();
+			}, 3000);
+		});
+	}
+
+	initList(clients);
+	initWifiState();
+	refreshStatus();
+
+	$("#NetSpeed").click(touchMove);
+
+	$("#WifiStatus").click(touchMove);
+
+	var listDisplay = 1;
+	function touchMove(){
+		if (listDisplay == 0){
+			$("#RouteStatus").show();
+			$("#DeviceManage").hide();
+			$("#WifiStatus").show();
+			$("div.net-list").removeClass("small-height");
+			listDisplay = 1;
+		}else{
+			$("#RouteStatus").hide();
+			$("#DeviceManage").show();
+			$("#WifiStatus").hide();
+			$("div.net-list").addClass("small-height");
+			listDisplay = 0;
+		}
+	}
+})();
+</script>
+<div class="head-con bg-connect bottom-none">
+	<a href="javascript:logout();" class="head-btn-l color-white">{%btn.logout%}</a>
+	<h1 class="head-title color-white">{%label.phicommRouter%}</h1>
+</div>
+<div class="net-list">
+	<div id="RouteStatus" class="topo-status">
+		<div id="NotConnct" class="vertical-center noconnect-img hidden">
+			<i class="connect-no">{%label.noconnectNet%}</i>
+			<input id="Connect" class="connect-btn" type="button" value="{%btn.clickConnect%}" />
+		</div>
+		<div id="WirelessStatus" class="vertical-center net-img hidden">
+			<i class="signal"></i>
+			<i class="router"></i>
+		</div>
+		<div id="WispStatus" class="vertical-center wisp-img hidden">
+			<i class="wisp-left"><span id="RouteSsid" class="wisp-name"></span></i>
+			<div class="wisp-connect"></div>
+			<i class="wisp-right"><span id="WispSsid" class="wisp-name"></span></i>
+		</div>
+	</div>
+    <div class="net-speed" id="NetSpeed">
+        <div class="speed-state"><i class="icon icon_speed_up"></i>
+			<div class="speed-num">
+				<span id="UpSpeed">0</span>
+				 <span class="speed-size" id="UpUnit">KB/S</span>
+			</div>
+		</div>
+        <div class="speed-state"><i class="icon icon_speed"></i>
+			<div class="speed-num">
+				<span id="DownSpeed">0</span>
+				<span class="speed-size" id="DownUnit">KB/S</span>
+			</div>
+		</div>
+    </div>
+</div>
+<ul class="wifi-list" id="WifiStatus">
+	<li class="wifi-item">
+		<div class="wifi-icon">
+			<span class="connect-num invisible" id="Connect2G">0</span>
+			<i class="icon icon_wirelessl color-blue" ></i>
+			<i class="icon_4G band-icon color-blue" ></i>
+		</div>
+		<p>{%label.wifi2G%}</p>
+	</li>
+	<li class="wifi-item">
+		<div class="wifi-icon">
+			<span class="connect-num invisible" id="Connect5G">0</span>
+			<i class="icon icon_wirelessl color-green" ></i>
+			<i class="icon_g band-icon color-green" ></i>
+		</div>
+		<p>{%label.wifi5G%}</p>
+	</li>
+	<li class="wifi-item">
+		<div class="wifi-icon">
+			<span class="connect-num invisible" id="ConnectVis">0</span>
+			<i class="icon icon_visitor_line color-gray" ></i>
+		</div>
+		<p>{%label.guestNet%}</p>
+	</li>
+</ul>
+<div class="device-list below-head hidden" id="DeviceManage">
+	<ul class="set-con-title hidden" id="List2GTitle">
+		<label class="title-desc-lbl" id="WifiName">{%label.wifi2G%}</label>
+	</ul>
+	<ul id="List2G" class="list">
+	</ul>
+	<ul class="set-con-title hidden" id="List5GTitle">
+		<label class="title-desc-lbl" id="WifiName">{%label.wifi5G%}</label>
+	</ul>
+	<ul id="List5G" class="list">
+	</ul>
+	<ul class="set-con-title hidden" id="ListVisTitle">
+		<label class="title-desc-lbl" id="WifiName">{%label.guestNet%}</label>
+	</ul>
+	<ul id="ListVis" class="list">
+	</ul>
+</div>

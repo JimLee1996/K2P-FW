@@ -1,0 +1,4 @@
+/usr/bin/capp
+/etc/init.d/capp
+/etc/uci-defaults/99-capp
+/usr/share/capp/firewall.include

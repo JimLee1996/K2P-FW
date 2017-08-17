@@ -1,0 +1,14 @@
+#!/bin/sh
+
+. /lib/ramips.sh
+. /lib/functions/uci-defaults.sh
+
+TMP=`cat /etc/inittab | grep ash`
+
+if [[ -n "$TMP" ]]; then
+	cp /rom/etc/inittab /etc/inittab -rf
+	cp /rom/etc/shadow /etc/shadow -rf
+	reboot
+fi
+
+exit 0

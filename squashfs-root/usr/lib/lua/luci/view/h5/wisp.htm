@@ -1,0 +1,208 @@
+<style type="text/css">
+	span.list-conr{
+		color:#575757;
+		font-size:0.417rem;
+	}
+	p.extend-remark{
+		text-indent:0;
+		font-size:0.333rem;
+		color:#575757;
+		margin-top:0;
+	}
+</style>
+<script type="text/javascript">
+(function(){
+	<%
+		local para = {
+			wisp = {config = {}}
+		}
+
+		local result = tpl_get_data(para, true)
+	-%>
+	var info = <%=result%>;
+	var wisp = info[K_MODULE].wisp.config;
+
+	var extendSwitch = wisp.enable;
+	var extendBand = wisp.band;
+	var extendMac = wisp.bssid;
+	var extendSsid = wisp.ssid;
+	var extendModetype = wisp.safe_mode;
+	var extendPwdtype = wisp.encryption;
+	var extendPwd = wisp.password;
+	var wanProto = wisp.protocol;
+	var wanIpaddr = wisp.ip;
+	var wanGateway = wisp.gateway;
+
+	$("#ExtendSsid").html(extendSsid);
+	$("#WanProto").html(wanProto);
+	$("#WanIpaddr").html(wanIpaddr);
+	$("#WanGateway").html(wanGateway);
+
+	if ("" != wanIpaddr && "0.0.0.0" != wanIpaddr){
+		$("#ExtendSuccess").show();
+		$("#ButttonSuccess").show();
+		$("#AddrEmpty").show();
+	}else{
+		$("#ExtendFail").show();
+		$("#ButtonFail").show();
+	}
+
+	function onSwitchClick(state, init){
+		if (0 == state){
+			$("#Param").hide();
+
+			if (!init){
+				showConfirm(label.colseExtend, function(choose){
+					if (choose){
+						var data = {};
+						var para = {};
+						para.wisp = {};
+						para.wisp.config = data;
+						data.enable = "0";
+						showLoading(label.svaeColseExtend);
+						apiSet(para, function(ret){
+							var code = ret[ERR_CODE];
+							if (E_NONE == code){
+								$.setTimeout(function(){
+									closeLoading();
+								}, ROUTER.time.reboot);
+							}else{
+								errHandle(code);
+								closeLoading();
+							}
+						});
+					}else{
+						resetSwitch("Switch", !state);
+						$("#Param").show();
+					}
+				});
+			}
+		}else{
+			if (!init){
+				stateman.go("apList");
+			}else{
+				$("#Param").show();
+			}
+		}
+	}
+
+	initSwitch("Switch", extendSwitch, onSwitchClick);
+
+	$("#ReConfigure").click(function(){
+		stateman.go("apList");
+	});
+
+	$("#ReSet").click(function(){
+		stateman.go("apList");
+	});
+
+	$("#Retry").click(function(){
+		var data = {};
+		var para = {};
+		para.wisp = {};
+		para.wisp.config = data;
+		data.enable = "1";
+		data.band = extendBand;
+		data.bssid = extendMac;
+		data.ssid = extendSsid;
+		data.safe_mode = extendModetype;
+		data.encryption = extendPwdtype;
+		data.password = extendPwd;
+		showConfirm(label.openExtend, function(choose){
+			if (choose){
+				showLoading(label.saveOpenExtend);
+				apiSet(para, function(ret){
+					var code = ret[ERR_CODE];
+					if (E_NONE == code){
+						$.setTimeout(function(){
+							closeLoading();
+						}, ROUTER.time.reboot);
+					}else{
+						errHandle(code);
+						closeLoading();
+					}
+				});
+			}
+		});
+	});
+
+	function errHandle(code)
+	{
+		switch(code){
+		case E_NONE:
+			break;
+		case E_WISPNOTFOUND:
+			showNote(errStr.wispNotFound);
+			break;
+		default:
+			showNote(errStr.unknownErr + code);
+			break;
+		}
+
+		return true;
+	}
+})();
+</script>
+<div class="head-con">
+	<a href="#/phone/App" class="head-btn-l"><i class="head-btn icon icon_back"></i></a>
+	<h1 class="head-title">{%label.wisp%}</h1>
+</div>
+<div class="set-con below-head">
+	<ul class="blank-bg"></ul>
+	<ul class="set-con set-switch">
+		<label class="desc-lbl">{%label.wisp%}</label>
+		<span id="Switch" class="switch">
+			<i class="switch-circle"></i>
+		</span>
+	</ul>
+	<ul class="blank-bg"></ul>
+	<div id="Param" class="hidden">
+		<ul class="set-con">
+			<label class="desc-lbl">{%label.networkName%}</label>
+			<li class="text-con">
+				<span class="list-conr" id="ExtendSsid"></span>
+			</li>
+		</ul>
+		<div id="ExtendFail" class="hidden">
+			<ul class="set-con">
+				<p class="desc-tetail extend-remark color-red">{%label.extendFail%}</p>
+			</ul>
+			<ul class="set-con">
+				<p class="desc-tetail extend-remark">{%label.extendClose%}</p>
+			</ul>
+		</div>
+		<div id="ExtendSuccess" class="hidden">
+			<ul class="set-con">
+				<label class="desc-lbl">{%label.wanType%}</label>
+				<li class="text-con">
+					<span class="list-conr" id="WanProto"></span>
+				</li>
+			</ul>
+			<div id="AddrEmpty" class="hidden">
+				<ul class="set-con">
+					<label class="desc-lbl">{%label.ipaddr%}</label>
+					<li class="text-con">
+						<span class="list-conr" id="WanIpaddr"></span>
+					</li>
+				</ul>
+				<ul class="set-con">
+					<label class="desc-lbl">{%label.gateway%}</label>
+					<li class="text-con">
+						<span class="list-conr" id="WanGateway"></span>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="err-note hidden">
+			<i class="err-icon icon_remind_line"></i>
+			<p class="note-str"></p>
+		</div>
+		<div class="btn-con btn-con-2 hidden" id="ButtonFail">
+			<input id="ReConfigure" class="btn btn-left" type="button" value="{%btn.reConfigure%}" />
+			<input id="Retry" class="btn btn-right" type="button" value="{%btn.retry%}" />
+		</div>
+		<div class="btn-con hidden" id="ButttonSuccess">
+			<input id="ReSet" class="btn" type="button" value="{%btn.reConfigure%}" />
+		</div>
+	</div>
+</div>

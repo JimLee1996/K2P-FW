@@ -1,0 +1,134 @@
+<script type="text/javascript">
+(function(){
+	$("#Save").click(function(){
+		var pwd = $("#PwdNew").val();
+		var confirmPwd = $("#PwdCfm").val();
+
+		if ("" == pwd){
+			showNote(errStr.newpwdBlank);
+			return;
+		}
+
+		if (false == checkIllegalChar(pwd)){
+			showNote(errStr.newpwdHasInvChr);
+			return;
+		}
+
+		if (getCNStrLen(pwd) < 5 || getCNStrLen(pwd) > 63){
+			showNote(errStr.newpwdLengthErr);
+			return;
+		}
+
+		if (pwd != confirmPwd){
+			showNote(errStr.pwdNotSame);
+			return;
+		}
+
+		var pwdEncoded = new Base64().base64encode(pwd);
+		var data = {};
+
+		data.username = "admin";
+		data.password = pwdEncoded;
+
+		apiRegister(data, function(result){
+			var code = result[ERR_CODE];
+			var next = $("li.current-step").next().attr("id");
+
+			switch(code){
+			case E_NONE:
+				stateman.go(next);
+				break;
+			case E_HASINITPWD:
+				showAlert(errStr.pwdHasInit, function(){
+					stateman.go(next);
+				});
+				break;
+			case E_PWDBLANK:
+				showNote(errStr.newpwdBlank);
+				break;
+			case E_PWDLEN:
+				showNote(errStr.newpwdLengthErr);
+				break;
+			case E_PWDILLEGAL:
+				showNote(errStr.newpwdHasInvChr);
+				break;
+			default:
+				showNote(errStr.unknownErr + code);
+				break;
+			}
+		});
+	});
+
+	var scroll = new NiceScroll("GuideCon");
+	scroll.init();
+})();
+</script>
+<style type="text/css">
+	#Help{
+		width:25%;
+	}
+	li.current-step h2{
+		background-color:#1bd34b;
+	}
+	div.right-set-con p.set-con-desc{
+		padding-top:20px;
+		margin-left:50px;
+		font-size:15px;
+		color:#4F5356;
+	}
+	/*1080p*/
+	@media screen and (min-device-width:1920px){
+		div.right-set-con p.set-con-desc{
+			font-size:18px;
+			margin-left:74px;
+		}
+	}
+</style>
+<div class="help hidden">
+	<ul class="help-content">
+		<li class="title">{%helpStr.adminPwd%}</li>
+		<li class="content">{%helpStr.adminPwdTip%}</li>
+	</ul>
+</div>
+<div class="head">
+	<div class="left-logo">
+		<img class="logo" src="/luci-static/images/phicomm.png?_=20170809165512" alt="phicomm" />
+		<span class="brand">{%label.phicomm%}</span>
+	</div>
+	<i id="HelpIcon" class="icon guide-icon icon_help"></i>
+</div>
+<div class="guide">
+	<div class="left-image-con center-container">
+		<div class="image-con vertical-center">
+			<h1 class="guide-title">{%label.adminPwd%}</h1>
+			<img class="left-image" src="/luci-static/images/password.png?_=20170809165512" alt="{%label.setAdminPwd%}" />
+		</div>
+	</div>
+	<div id="GuideCon" class="set-con right-set-con center-container">
+		<div class="vertical-center">
+			<p class="set-con-desc">{%label.setAdminPwd%}</p>
+			<ul class="set-con">
+				<li class="text-con">
+					<label class="desc-lbl">{%label.adminPwd%}</label>
+					<input class="text ime-mode-n hover" type="password" maxLength="63" id="PwdNew" value="" placeholder="{%label.pwdLenTip%}" />
+					<i class="tip icon-eye" data-value="0"></i>
+				</li>
+			</ul>
+			<ul class="set-con">
+				<li class="text-con">
+					<label class="desc-lbl">{%label.confirmPwd%}</label>
+					<input class="text ime-mode-n hover" type="password" maxLength="63" id="PwdCfm" value="" placeholder="{%label.pwdLenTip%}" />
+					<i class="tip icon-eye" data-value="0"></i>
+				</li>
+			</ul>
+			<div class="err-note hidden">
+				<i class="err-icon icon_remind_line"></i>
+				<p class="note-str"></p>
+			</div>
+			<div class="guide-btn-con">
+				<input id="Save" class="btn guide-btn" type="button" value="{%btn.nextStep%}" />
+			</div>
+		</div>
+	</div>
+</div>
+<%+footer%>

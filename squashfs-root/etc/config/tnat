@@ -1,0 +1,4 @@
+
+config appmgt 'appmgt'
+    option enable      '1'
+    option log         '0'

@@ -1,0 +1,10 @@
+Package: kernel
+Version: 3.10.14-1-b111ad83351afe639183d8564c3857ca
+Depends: libc
+Source: package/kernel/linux
+License: GPLv2
+Section: sys
+Status: unknown hold not-installed
+Architecture: ramips_1004kc
+Installed-Size: 105
+Description:  unknown

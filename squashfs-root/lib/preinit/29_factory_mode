@@ -1,0 +1,18 @@
+#!/bin/sh
+######################################################################
+# Copyright (C) 2016. Shanghai Feixun Communication Co.,Ltd.
+#
+# DISCREPTION   : 产测模式
+# AUTHOR        : xiongyi.ouyang <xiongyi.ouyang@phicomm.com.cn>
+# CREATED DATE  : 2016-07-22
+# MODIFIED DATE : 
+######################################################################
+
+factory_mode() {
+	if [[ `phic_fac -g fac_mode` = "fac_mode=Y" ]]; then
+		FAILSAFE=true
+		export FAILSAFE
+	fi
+}
+
+boot_hook_add preinit_main factory_mode

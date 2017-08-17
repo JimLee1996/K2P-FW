@@ -1,0 +1,98 @@
+#!/bin/sh /etc/rc.common
+
+START=75
+
+start_firewall() {
+	config_get_bool DMZ_enable DMZ enable 0
+
+	if [ $DMZ_enable != 1 ]; then
+		stop_firewall
+		return 0
+	fi
+
+	local DMZ_rules
+	local DMZ_natrule
+	local DMZ_postroutrule
+	local prefix="iptables -t filter -A DMZ_filter"
+	local suffix="-j ACCEPT"
+
+	local DMZip
+	local wan_name
+	local wan_ip
+	config_get DMZip DMZ dmz_ip
+	wan_name=$(uci get network.wan.ifname)
+	wan_proto=$(uci get network.wan.proto)
+	if [ ${wan_proto} != "pppoe" ]; then
+		wan_ip=$(ifconfig $wan_name | grep "inet addr" | awk '{print $2}' | awk -F ":" '{print $2}')
+	else
+		wan_ip=$(ifconfig pppoe-wan | grep "inet addr" | awk '{print $2}' | awk -F ":" '{print $2}')
+		wan_name="pppoe-wan"
+	fi
+	lan_name="br-lan"
+	
+	append DMZ_natrule "iptables -w -t nat -A DMZ_nat -p udp --sport 53 -m conntrack --ctstate INVALID,NEW -j RETURN $N"
+	append DMZ_natrule "iptables -w -t nat -A DMZ_nat -i $wan_name -j DNAT --to-destination $DMZip $N"
+	append DMZ_natrule "iptables -w -t nat -A DMZ_nat -i $lan_name -j DNAT --to-destination $DMZip $N"
+	append DMZ_natrule "iptables -w -t nat -A DMZ_postrout -d $DMZip -o $lan_name -j MASQUERADE $N"
+	append DMZ_rules "$prefix -d $DMZip -i $wan_name $suffix $N"
+	append DMZ_rules "$prefix -d $DMZip -i $lan_name -o $lan_name $suffix $N"
+
+	stop_firewall
+cat << EOF
+iptables -w -t nat -N DMZ_nat
+iptables -w -t nat -I PREROUTING -d $wan_ip -j DMZ_nat
+
+iptables -w -t nat -N DMZ_postrout
+iptables -w -t nat -I POSTROUTING -j DMZ_postrout
+$DMZ_natrule
+iptables -w -N DMZ_filter
+iptables -w -I FORWARD -j DMZ_filter
+$DMZ_rules
+EOF
+}
+
+stop_firewall() {
+	iptables -t nat -S |
+		grep '\-j DMZ_nat' |
+		sed -e 's/^-A/iptables -t nat -w -D/' | sh
+	iptables -t nat -S |
+		grep '^-N DMZ_nat' |
+		sed -e '/^-N/{s/^-N/-X/;H;s/-X/-F/}' -e '${p;g}' |
+		sed -n -e 's/^./iptables -t nat &/p' | sh
+
+	iptables -t nat -S |
+		grep '\-j DMZ_postrout' |
+		sed -e 's/^-A/iptables -t nat -w -D/' | sh
+	iptables -t nat -S |
+		grep '^-N DMZ_postrout' |
+		sed -e '/^-N/{s/^-N/-X/;H;s/-X/-F/}' -e '${p;g}' |
+		sed -n -e 's/^./iptables -t nat &/p' | sh
+
+
+	iptables -t filter -S |
+		grep '\-j DMZ_filter' |
+		sed -e 's/^-A/iptables -t filter -w -D/' | sh
+	iptables -t filter -S |
+		grep '^-N DMZ_filter' |
+		sed -e '/^-N/{s/^-N/-X/;H;s/-X/-F/}' -e '${p;g}' |
+		sed -n -e 's/^./iptables -t filter &/p' | sh
+}
+	
+start() {
+	config_load DMZ
+	start_firewall | sh
+}
+
+stop() {
+	stop_firewall
+}
+
+restart() {
+	stop
+	start
+}
+
+reload() {
+	stop
+	start
+}

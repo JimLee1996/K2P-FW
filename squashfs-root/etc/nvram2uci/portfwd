@@ -1,0 +1,44 @@
+#!/bin/sh
+. /lib/functions/nvram2uci.sh
+
+local port_forward_enable port_forward_rule_count
+
+port_forward_enable=`nvram get linux port_forward_en 2>/dev/null`
+port_forward_rule_count=`nvram get linux port_forward_count 2>/dev/null`
+
+if [ -n "$port_forward_enable" ]; then
+	nvram2uci port_forward_en appportfwd.config.enable
+fi
+local i=1
+if [ -n "$port_forward_rule_count" ]; then
+	for i in `seq $port_forward_rule_count`; do
+		port_forward_rule=`nvram get linux port_forward_rule_$i 2>/dev/null`
+		name=`echo $port_forward_rule | awk -F ',' '{print $7}'`
+		serverip=`echo $port_forward_rule | awk -F ',' '{print $1}'`
+		startport=`echo $port_forward_rule | awk -F ',' '{print $2}'`
+		endport=`echo $port_forward_rule | awk -F ',' '{print $3}'`
+		proto=`echo $port_forward_rule | awk -F ',' '{print $6}'`
+		if [ $proto == '1' ]; then
+			proto="tcp"
+		elif [ $proto == '2' ]; then
+			proto="udp"
+		else
+			proto="tcp+udp"
+		fi
+
+		if [ x$startport == x$endport ]; then
+			interport=$startport
+		else
+			interport=$startport"-"$endport	
+		fi
+
+		uci add appportfwd setting
+		uci set appportfwd.@setting[$((i-1))].name=$name
+		uci set appportfwd.@setting[$((i-1))].exterport=$interport
+		uci set appportfwd.@setting[$((i-1))].serverip=$serverip
+		uci set appportfwd.@setting[$((i-1))].interport=$interport
+		uci set appportfwd.@setting[$((i-1))].proto=$proto
+		let i+=1
+	done
+	uci commit appportfwd
+fi

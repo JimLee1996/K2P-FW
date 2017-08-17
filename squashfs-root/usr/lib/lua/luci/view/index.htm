@@ -1,0 +1,72 @@
+<%-
+    local para = {device = {info = {}}, welcome = {config = {}}, network = {lan = {}}, dev_feature = {time = {}}}
+    local result = tpl_get_data(para)
+
+    local info = result[K_MODULE].device.info
+    local model = info.model
+    local domain = info.domain
+
+    local welcome = result[K_MODULE].welcome.config
+    local guide = welcome.guide
+    local lang = welcome.language
+
+    local ip = require("luci.http").getenv("REMOTE_ADDR") or "0.0.0.0"
+    local mac = require("luci.sys").net.ip4mac(ip) or "00:00:00:00:00:00"
+
+    local lan = result[K_MODULE].network.lan
+    local lan_ip = lan.ip
+    local lan_mask = lan.netmask
+    local lan_net = require("luci.phicomm.validator").check_same_network(ip, lan_ip, lan_mask)
+    local lan_login = lan_net and "true" or "false"
+
+    local time = result[K_MODULE].dev_feature.time
+-%>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+	<title><%=model%></title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="screen-orientation" content="portrait"><!-- uc强制竖屏 -->
+	<meta name="x5-orientation" content="portrait"><!-- QQ强制竖屏 -->
+	<link rel="icon" href="/luci-static/images/favicon.ico?_=20170809165512" type="image/x-icon" />
+	<link rel="shortcut icon" href="/luci-static/images/favicon.ico?_=20170809165512" type="image/x-icon" />
+
+	<link rel="stylesheet" type="text/css" href="/luci-static/dynaform/frame.css?_=20170809165512" />
+	<link rel="stylesheet" type="text/css" href="/luci-static/dynaform/icon_fonts_style.css?_=20170809165512" />
+	<script type="text/javascript" src="/luci-static/dynaform/frame.js?_=20170809165512"></script>
+</head>
+<body>
+	<div id="Con"></div>
+	<div id="Help">
+		<div class="help-back"><i class="help-back icon_help_back"></i></div>
+		<div id="HelpInfo" class="help-info"></div>
+	</div>
+	<div id="Cover" class="pop-cover"></div>
+	<div id="Pop" class="pop-widget"></div>
+	<script type="text/javascript">
+		var BROWSER = {
+			ip:"<%=ip%>",
+			mac:"<%=mac%>",
+			lan:<%=lan_login%>
+		};
+
+		var ROUTER = {
+			domain:"<%=domain%>",
+			time:{
+				reboot:<%=time.reboot%> * 1000,
+				reset:<%=time.reset%> * 1000,
+				restore:<%=time.restore%> * 1000,
+				manualUpgrade:<%=time.manual_upgrade%> * 1000,
+				onlineUpgrade:<%=time.online_upgrade%> * 1000,
+				detectDelay:<%=time.detect_delay%> * 1000
+			},
+			lang:'<%=lang%>',
+			guide:<%=guide%>
+		};
+
+		pageOnload();
+	</script>
+</body>
+</html>

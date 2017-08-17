@@ -1,0 +1,11 @@
+config button 'wps_wifi'
+	option switch 'wps'
+
+config board wireless
+	option dev2g mt7620
+	option dev5g mt7612e
+
+config wireless last_conf
+	option dis2g '0'
+	option dis5g '0'
+	option disAccess '1'

@@ -1,0 +1,9 @@
+Package: lighttpd-mod-redirect
+Version: 1.4.35-2
+Depends: libc, lighttpd, libpcre
+Source: feeds/packages/net/lighttpd
+Section: net
+Maintainer: W. Michael Petullo <mike@flyn.org>
+Architecture: ramips_1004kc
+Installed-Size: 3235
+Description:  unknown

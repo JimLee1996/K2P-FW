@@ -1,0 +1,32 @@
+#!/bin/sh /etc/rc.common 
+
+
+START=75
+
+start() {
+
+	stop
+
+	iptables -N security_input
+	iptables -I INPUT -j security_input
+	
+	if [ "$ddos_enable" = "1" -a "$ping_disable" = "1" ]; then
+		iptables -A security_input -i $wanifname -p icmp --icmp-type 8 -j DROP
+	else
+		iptables -A security_input -i $wanifname -p icmp -j ACCEPT
+	fi
+}
+
+stop() {
+	config_load safeset
+	config_get_bool spi_enable config spi_enable 1
+	config_get_bool ddos_enable config ddos_enable 0
+	config_get_bool ping_disable config ping_disable 0
+
+	wanifname=`fw3 -q zone wan | head -1`
+	[ -n "$wanifname" ] || return
+
+	iptables -F security_input > /dev/null 2>&1
+	iptables -X security_input > /dev/null 2>&1
+}
+

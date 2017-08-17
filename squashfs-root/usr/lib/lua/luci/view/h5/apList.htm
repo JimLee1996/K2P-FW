@@ -1,0 +1,189 @@
+<style type="text/css">
+	ul.list{
+		margin:0 0.5rem;
+	}
+	li.list-item{
+		font-size:0;
+		padding:0.25rem 0 0.25rem;
+		overflow:hidden;
+		border-bottom:1px solid #E9E9E9;
+	}
+	label.title-size{
+		font-size:0.5rem;
+	}
+	p.list-con-l{
+		font-size:0;
+		float:left;
+	}
+	span.list-con1{
+		color:#575757;
+		font-size:0.5rem;
+	}
+	div.signal-bg{
+		margin-right:0;
+		float: right;
+		width: 0.5rem;
+		height:0.5rem;
+		background-size:contain !important;
+	}
+	div.signal-one-encryp{
+		background:url(/luci-static/images/signal_lock_1.png?_=20170809165512) no-repeat;
+	}
+	div.signal-two-encryp{
+		background:url(/luci-static/images/signal_lock_2.png?_=20170809165512) no-repeat;
+	}
+	div.signal-three-encryp{
+		background:url(/luci-static/images/signal_lock_3.png?_=20170809165512) no-repeat;
+	}
+	div.signal-four-encryp{
+		background:url(/luci-static/images/signal_lock_4.png?_=20170809165512) no-repeat;
+	}
+	div.signal-one-open{
+		background:url(/luci-static/images/signal_1.png?_=20170809165512)  no-repeat top right;
+	}
+	div.signal-two-open{
+		background:url(/luci-static/images/signal_2.png?_=20170809165512)  no-repeat top right;
+	}
+	div.signal-three-open{
+		background:url(/luci-static/images/signal_3.png?_=20170809165512)  no-repeat top right;
+	}
+	div.signal-four-open{
+		background:url(/luci-static/images/signal_4.png?_=20170809165512)  no-repeat top right;
+	}
+	i.head-btn-r{
+		font-size:0.75rem;
+		line-height:1.111rem;
+		top: 0;
+		right: 0.5rem;
+		position: absolute;
+	}
+</style>
+<script type="text/javascript">
+(function(){
+	initValue();
+	function initValue(){
+		showLoading(label.scanAplist);
+		apList();
+	}
+
+	function sortByKey(array, key){
+		return array.sort(function(a, b) {
+			var x = a[key];
+			var y = b[key];
+
+			return ((x > y) ? -1 : ((x < y) ? 1 : 0));
+		});
+	}
+
+	function apList(){
+		var data = {
+			wisp:{ap_list:null}
+		};
+
+		apiGet(data, function(result){
+			var errNo = result[ERR_CODE];
+			if (E_NONE == errNo){
+				ret = result[K_MODULE];
+				clients = ret.wisp.ap_list;
+
+				var aplist = sortByKey(clients, 'signal');
+				var len = aplist.length;
+				var List2GObj = $("#List2G");
+				var List5GObj = $("#List5G");
+
+				for (var i = 0; i < len; i++){
+					if (0 == clients[i].band) {
+						List2GObj.append(initEntry(aplist[i]));
+					}else{
+						List5GObj.append(initEntry(aplist[i]));
+					}
+				}
+				closeLoading();
+			}else{
+				console.log(result);
+			}
+		});
+	}
+
+	function JSON2UriParam(data){
+		return $.param(data).replace(/\+/g, '%20');
+	}
+
+	function initEntry(client){
+		var param = JSON2UriParam(client);
+		var ssid = client.ssid;
+		var wifiMode;
+		var signalStreng;
+		var signal = Math.abs(client.signal);
+
+		if (client.safe_mode == "OPEN"){
+			if (signal < 25){
+				signalStreng += '<div class="signal-bg signal-one-open"></div>';
+			}
+			else if (signal < 50){
+				signalStreng += '<div class="signal-bg signal-two-open"></div>';
+			}
+			else if (signal < 75){
+				signalStreng += '<div class="signal-bg signal-three-open"></div>';
+			}
+			else{
+				signalStreng += '<div class="signal-bg signal-four-open"></div>';
+			}
+		}else{
+			if (signal < 25){
+				signalStreng += '<div class="signal-bg signal-one-encryp"></div>';
+			}
+			else if (signal < 50){
+				signalStreng += '<div class="signal-bg signal-two-encryp"></div>';
+			}
+			else if (signal < 75){
+				signalStreng += '<div class="signal-bg signal-three-encryp"></div>';
+			}
+			else{
+				signalStreng += '<div class="signal-bg signal-four-encryp"></div>';
+			}
+		}
+
+		return '<a href="#/setExtend/?' + param + '" class="list-item"><li class="list-item">' +
+			'<p class="list-con-l"><span class="list-con1">' + ssid +
+			'</span></p>' + signalStreng +
+			'</li></a>';
+	}
+
+	$("i.head-btn-r").click(function(){
+		stateman.go("apList");
+	});
+
+	stateman.on("begin", function(evt){
+		if ("apList" == evt.previous.name){
+			var tkipaes = evt.current.param.encryption;
+			var encryp = evt.current.param.safe_mode;
+			if ("WEP" == tkipaes || "SHARED" == encryp){
+				evt.stop();
+				showAlert(errStr.noSupportWifi);
+			}
+		}
+	});
+
+})();
+</script>
+<div class="head-con">
+	<a href="#/wisp" class="head-btn-l"><i class="head-btn icon icon_back"></i></a>
+	<h1 class="head-title">{%label.selectExtend%}</h1>
+	<i class="head-btn-r icon icon_refresh" ></i>
+</div>
+<div class="device-list below-head">
+	<ul class="set-con-title" id="List2GTitle">
+		<label class="title-desc-lbl title-size">{%label.wifi2G%}</label>
+	</ul>
+	<ul id="List2G" class="list">
+	</ul>
+	<ul class="set-con-title" id="List5GTitle">
+		<label class="title-desc-lbl title-size">{%label.wifi5G%}</label>
+	</ul>
+	<ul id="List5G" class="list">
+	</ul>
+	<ul class="set-con-title" id="HiddenlineTitle">
+		<label class="title-desc-lbl title-size">{%label.hiddenWifi%}</label>
+	</ul>
+</div>

@@ -1,0 +1,121 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+
+portfwd_add_rule() {
+	local serverip
+	local exterport
+	local interport
+	local proto
+	local cfg="$1"
+	local rules="$2"
+
+	config_get serverip $cfg serverip
+	config_get exterport $cfg exterport
+	config_get interport $cfg interport
+	config_get proto $cfg proto
+
+	if [ -z "$serverip" ]; then
+		return 1
+	fi
+
+	wan_name=$(uci get network.wan.ifname)
+	wan_proto=$(uci get network.wan.proto)
+	if [ ${wan_proto} != "pppoe" ]; then
+		wan_ip=$(ifconfig $wan_name | grep "inet addr" | awk '{print $2}' | awk -F ":" '{print $2}')
+	else
+		wan_ip=$(ifconfig pppoe-wan | grep "inet addr" | awk '{print $2}' | awk -F ":" '{print $2}')
+		wan_name="pppoe-wan"
+	fi
+	lan_name="br-lan"
+
+	sport=`echo $exterport | awk -F "-" '{print $1}'`
+	eport=`echo $exterport | awk -F "-" '{print $2}'`
+	if [ x$eport == x"" ]; then
+		eport=$sport
+	fi
+
+	if [ $sport == $eport ]; then
+		portrange=$sport
+	else
+		portrange=$sport":"$eport
+	fi
+
+	port1=`echo $interport | awk -F "-" '{print $1}'`
+	port2=`echo $interport | awk -F "-" '{print $2}'`
+	if [ x$port2 == x"" ]; then
+		port2=$port1
+	fi
+	if [ $port1 == $port2 ]; then
+		serverport=${port1}
+	else
+		serverport=${port1}"-"${port2}
+	fi
+
+	proto1=`echo $proto | awk -F "+" '{print $1}'`
+	proto2=`echo $proto | awk -F "+" '{print $2}'`
+	append $rules "iptables -t nat -A port_forward_nat -i $wan_name -p $proto1 -m $proto1 --dport $portrange -j DNAT --to-destination $serverip:$serverport $N"
+	append $rules "iptables -t nat -A port_forward_nat -d $wan_ip -i $lan_name -p $proto1 -m $proto1 --dport $portrange -j DNAT --to-destination $serverip:$serverport $N"
+	if [ $proto1 == "tcp" ]; then
+		append $rules "iptables -t nat -A port_forward_postrout -d $serverip -o $lan_name -p $proto1 -j MASQUERADE $N"
+	fi
+	if [ x$proto2 != x"" ]; then
+		append $rules "iptables -t nat -A port_forward_nat -i $wan_name -p $proto2 -m $proto2 --dport $portrange -j DNAT --to-destination $serverip:$serverport $N"
+		append $rules "iptables -t nat -A port_forward_nat -d $wan_ip -i $lan_name -p $proto2 -m $proto2 --dport $portrange -j DNAT --to-destination $serverip:$serverport $N"
+	fi
+}
+
+start_firewall() {
+	config_get_bool portfwd_enable config enable 0
+
+	if [ $portfwd_enable == 0 ]; then
+		stop_firewall
+		return 0
+	fi
+
+	local portfwd_rules
+	config_foreach portfwd_add_rule setting portfwd_rules
+
+	stop_firewall
+cat << EOF
+iptables -t nat -N port_forward_nat
+iptables -t nat -I PREROUTING -j port_forward_nat
+
+iptables -t nat -N port_forward_postrout
+iptables -t nat -I POSTROUTING -j port_forward_postrout
+
+$portfwd_rules
+EOF
+}
+
+stop_firewall() {
+	iptables -t nat -S |
+		grep '\-j port_forward_postrout' |
+		sed -e 's/^-A/iptables -t nat -w -D/' | sh
+	iptables -t nat -S |
+		grep '^-N port_forward_postrout' |
+		sed -e '/^-N/{s/^-N/-X/;H;s/-X/-F/}' -e '${p;g}' |
+		sed -n -e 's/^./iptables -t nat &/p' | sh
+
+	iptables -t nat -S |
+		grep '\-j port_forward_nat' |
+		sed -e 's/^-A/iptables -t nat -w -D/' | sh
+	iptables -t nat -S |
+		grep '^-N port_forward_nat' |
+		sed -e '/^-N/{s/^-N/-X/;H;s/-X/-F/}' -e '${p;g}' |
+		sed -n -e 's/^./iptables -t nat &/p' | sh
+}
+
+start() {
+	config_load appportfwd
+	start_firewall | sh
+}
+
+stop() {
+	stop_firewall
+}
+
+restart() {
+	stop
+	start
+}

@@ -1,0 +1,3 @@
+/usr/lib/lua/luci/view/pc/routerInfo.htm
+/www/luci-static/images/app-icon/router_status.png
+/usr/lib/lua/luci/controller/admin/system_status.lua

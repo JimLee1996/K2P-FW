@@ -1,0 +1,2 @@
+config UPnP 'config'
+	option enable '1'

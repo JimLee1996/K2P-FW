@@ -1,0 +1,409 @@
+<style type="text/css">
+	div.main{
+		font-size:0;
+		position:absolute;
+		top:0;
+		left:0;
+		right:0;
+		margin:auto;
+		bottom:210px;
+		text-align:center;
+	}
+	div.main-con{
+		display:inline-block;
+		vertical-align:middle;
+		margin:auto;
+	}
+	div.main:after{
+		content:'';
+		display:inline-block;
+		vertical-align:middle;
+		height:100%;
+	}
+	div.center-logo{
+		margin:auto;
+		width:219px;
+		height:32px;
+		background:url(/luci-static/images/phicomm.png?_=20170809165512) no-repeat;
+	}
+	h1.router-name{
+		color:#909396;
+		text-align:center;
+		margin-top:30px;
+		margin-bottom:40px;
+	}
+	span.router{
+		font-size:20px;
+	}
+	span.router-model{
+		margin-left:10px;
+		font-size:16px;
+	}
+	div.center-router{
+		margin:90px auto;
+		width:106px;
+		height:68px;
+		background:url(/luci-static/images/pic_router.png?_=20170809165512) no-repeat;
+	}
+	div.bg-map{
+		position:absolute;
+		left:0;
+		right:0;
+		top:50%;
+		margin:-130px auto 0;
+		width:771px;
+		height:371px;
+		background:url(/luci-static/images/bg_map.jpg?_=20170809165512) no-repeat;
+		z-index:-10;
+	}
+	div.login-con{
+		height:130px;
+	}
+	li.login-con{
+		width:200px;
+		border-radius:18px 0 0 18px;
+		border-width:1px;
+		border-right-width:0px;
+	}
+	li.text-con input.text-eye {
+		width: 99px;
+	}
+	li.login-con i.icon{
+		display:inline-block;
+		color:#909396;
+		font-size:24px;
+		line-height:24px;
+		width:34px;
+		border-right:1px solid #DDD;
+		vertical-align:middle;
+	}
+	li.text-con-focus i.icon{
+		border-color:#FFBE62;
+	}
+	li.login-con input.text{
+		line-height:32px;
+		height:32px;
+		border-width:0;
+	}
+	input.login-btn{
+		cursor:pointer;
+		border:0;
+		height:34px;
+		width:79px;
+		line-height:34px;
+		vertical-align:middle;
+		background:url(/luci-static/images/bg_botton.png?_=20170809165512) no-repeat;
+	}
+	li.remember-pwd{
+		margin:40px auto;
+	}
+	i.check-icon{
+		cursor:pointer;
+		font-size:32px;
+		line-height:32px;
+		color:#B2B2B2;
+		vertical-align:middle;
+	}
+	i.checked{
+		color:#0FD245;
+	}
+	li.remember-pwd span{
+		color:#4F5356;
+		font-size:15px;
+		line-height:32px;
+		vertical-align:middle;
+	}
+	div.err-note{
+		text-align:left;
+		margin-bottom:0;
+		margin-left:20px;
+	}
+	div.footer{
+		width:100%;
+		min-width:980px;
+		height:210px;
+		position:absolute;
+		bottom:0;
+		font-size:14px;
+		color:#909396;
+		background-color:#3F4044;
+		text-align:center;
+	}
+	div.separate-line{
+		height:2px;
+		background:url(/luci-static/images/color_line.png?_=20170809165512) repeat;
+	}
+	div.download-app{
+		color:#FFF;
+		font-size:12px;
+		position:absolute;
+		top:30px;
+		right:0;
+	}
+	div.pic-code{
+		margin:0 auto 10px;
+		width:87px;
+		height:87px;
+		background:url(/luci-static/images/pic_code.png?_=20170809165512) no-repeat;
+	}
+	div.hotline{
+		display:inline-block;
+		width:240px;
+		text-align:left;
+	}
+	i.phone-img{
+		font-size:28px;
+		color:#FF8000;
+	}
+	span.phone-tip{
+		font-size:14px;
+		line-height:28px;
+		vertical-align:top;
+		color:#767D82;
+		margin-top:3px;
+		margin-left:5px;
+	}
+	p.phone-num{
+		font-size:24px;
+		color:#FF8000;
+		margin-top:10px;
+	}
+	p.copyright{
+		margin-top:30px;
+	}
+	div.route-info{
+		display:inline-block;
+		text-align:left;
+	}
+	div.info{
+		position:relative;
+		padding-top:50px;
+		margin:auto;
+	}
+	div.info a{
+		color:#909396;
+		margin-right:45px;
+	}
+	#RouterMac{
+		margin-left:0.5em;
+	}
+	/*1080p适配*/
+	@media screen and (min-device-width:1920px){
+		div.footer{
+			font-size:18px;
+			height:280px;
+		}
+		i.phone-img{
+			font-size:30px;
+		}
+		span.phone-tip{
+			font-size:18px;
+			line-height:30px;
+		}
+		div.center-logo {
+			width: 289px;
+			height: 40px;
+			background-size:289px 40px;
+		}
+		h1.router-name {
+			margin-top: 42px;
+			margin-bottom: 62px;
+		}
+		span.router {
+			font-size: 30px;
+		}
+		span.router-model {
+			font-size: 26px;
+		}
+		div.center-router {
+			width: 141px;
+			height: 91px;
+			background-size:141px 91px;
+			margin: 90px auto 85px;
+		}
+		li.login-con {
+			width: 330px;
+			border-radius: 22px 0 0 22px;
+		}
+		i.tip {
+			line-height: 46px;
+			font-size: 28px;
+		}
+		li.login-con i.icon {
+			width: 50px;
+		}
+		li.login-con input.text {
+			line-height: 46px;
+			height: 46px;
+		}
+		li.text-con input.text-eye {
+			width:208px;
+		}
+		input.login-btn {
+			height: 49px;
+			width: 110px;
+			line-height: 49px;
+			background-size: 110px 49px;
+		}
+		li.remember-pwd {
+			margin: 50px auto;
+		}
+		li.remember-pwd span {
+			font-size: 18px;
+		}
+		div.main{
+			bottom:280px;
+		}
+	}
+</style>
+<script type="text/javascript">
+(function(){
+	var checked = "checked";
+	var PWD_KEY = "loginPwd";
+
+	(function(){	// 尝试从本地读取密码
+		var pwd = null;
+		var check = $("#Check");
+
+		try{
+			pwd = localStorage.getItem(PWD_KEY);
+		}catch(e){};
+
+		if (pwd != null && pwd.length > 0){
+			check.addClass(checked);
+			$("#Pwd").val(pwd);
+		}else{
+			check.removeClass(checked);
+		}
+
+		check.click(function(){
+			if ($(this).hasClass(checked)){
+				$(this).removeClass(checked);
+			}else{
+				$(this).addClass(checked);
+			}
+		});
+
+		try{	// fix Bug KB-440
+			sessionLS.removeItem("upgradeWgt");
+		}catch(e){}
+	})();
+
+	$("#Pwd").bind("keyup", function(event){
+		if (event.keyCode == 13) {
+			$("#Save").click();
+		}
+	});
+
+	$("#Save").click(function(){
+		if (false == $("#Check").hasClass(checked)){
+			try{
+				localStorage.removeItem(PWD_KEY);
+			}catch(e){};
+		}
+
+		var pwd = $("#Pwd").val();
+		if("" == pwd){
+			showNote(errStr.pwdBlank);
+			return;
+		}
+
+		if (pwd.length < 5){
+			showNote(errStr.pwdTooShort);
+			return;
+		}
+
+		var pwdEncoded = new Base64().base64encode(pwd);
+		var data = {};
+
+		data.username = "admin";
+		data.password = pwdEncoded;
+
+		apiLogin(data, function(result){
+			var code = result[ERR_CODE];
+			switch(code){
+			case E_NONE:
+				if ($("#Check").hasClass(checked)){
+					try{
+						localStorage.setItem(PWD_KEY, pwd);
+					}catch(e){};
+				}
+
+				var goGuide = result[K_MODULE].security.login.guide;
+				if (1 == goGuide){
+					stateman.go("guideNetworkSet", {replace : true});
+				}else{
+					if ("" == stateman.previous.name || stateman.current.name == stateman.previous.name || "login" == stateman.previous.name){
+						stateman.go("pc.netState", {replace : true});
+					}else{
+						stateman.go(stateman.previous.name, {replace : true});
+					}
+				}
+				break;
+			case E_PWDOVTIME:
+				showNote(errStr.otherLogin);
+				break;
+			case E_UNAUTH:
+			default:
+				showNote(errStr.pwdError);
+				break;
+			}
+		});
+	});
+
+	var contentScroll = new NiceScroll("Main");
+	contentScroll.init();
+})();
+</script>
+<%
+	local para = {device = {info = {}}}
+	local result = tpl_get_data(para)
+	local dev_mac = result[K_MODULE].device.info.mac
+	local model = result[K_MODULE].device.info.model
+-%>
+<div id="Main" class="main">
+	<div class="main-con">
+		<div class="center-logo"></div>
+		<h1 class="router-name">
+			<span class="router">{%label.phicommRouter%}</span>
+			<span class="router-model"><%=model%></span>
+		</h1>
+		<div class="center-router"></div>
+		<div class="login-con">
+			<ul class="set-con">
+				<li class="text-con login-con">
+					<i class="icon icon_lock"></i>
+					<input class="text hover" type="password" maxLength="63" id="Pwd" placeholder="{%label.inputPwd%}" />
+					<i class="tip icon-eye" data-value="0"></i>
+				</li>
+				<input id="Save" class="login-btn" type="button" />
+				<div class="err-note hidden">
+					<i class="err-icon icon_remind_line"></i>
+					<p class="note-str"></p>
+				</div>
+				<li class="remember-pwd">
+					<i id="Check" class="check-icon icon_select_on"></i><span>{%label.rememberPwd%}</span>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div class="bg-map"></div>
+</div>
+<div class="footer">
+	<div class="separate-line"></div>
+	<div class="info center-con">
+		<div class="hotline">
+			<i class="icon icon_phone phone-img"></i><span class="phone-tip">{%label.hotline%}</span>
+			<p class="phone-num">4007-567-567</p>
+		</div>
+		<div class="route-info">
+			<a href="javascript:showUserAgreement();" class="user-agreement">{%label.userAgreement%}</a>
+			<span>{%label.macAddr%}{%label.colon%}<span id="RouterMac"><%=dev_mac%></span></span>
+			<p class="company copyright">{%label.phicommTechnologyCoLtd%}</p>
+		</div>
+		<div class="download-app">
+			<div class="pic-code"></div>
+			<p>{%label.scanDownloadApp%}</p>
+		</div>
+	</div>
+</div>

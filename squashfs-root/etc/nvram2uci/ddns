@@ -1,0 +1,17 @@
+#!/bin/sh 
+. /lib/functions/nvram2uci.sh
+
+service_name=`nvram get linux  ddns_provider`
+
+if [ $service_name = "none" ];then
+	enabled="0"
+else
+	enabled="1"
+	nvram2uci ddns_provider ddns.myddns.service_name
+fi
+uci set ddns.myddns.enabled=$enabled
+uci commit
+
+nvram2uci ddns_account ddns.myddns.username
+nvram2uci ddns_password ddns.myddns.password
+nvram2uci ddns ddns.myddns.domain

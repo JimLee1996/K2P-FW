@@ -1,0 +1,8 @@
+Package: update_usrproto
+Version: 1
+Depends: libc, libcurl
+Source: package/phicomm/update_usrproto
+Section: Phicomm Properties
+Architecture: ramips_1004kc
+Installed-Size: 3212
+Description:  unknown

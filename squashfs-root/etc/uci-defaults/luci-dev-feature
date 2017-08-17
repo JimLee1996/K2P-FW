@@ -1,0 +1,9 @@
+#!/bin/sh
+
+uci delete dev_feature.wifi_5g.band_width
+uci add_list dev_feature.wifi_5g.band_width=0
+uci add_list dev_feature.wifi_5g.band_width=4
+uci add_list dev_feature.wifi_5g.band_width=1
+uci add_list dev_feature.wifi_5g.band_width=2
+
+uci commit dev_feature

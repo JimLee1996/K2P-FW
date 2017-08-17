@@ -1,0 +1,159 @@
+<script type="text/javascript">
+(function(){
+	<%
+		local para = {wireless = {guest_wifi = {}}, wisp = {config = {}}}
+		local result = tpl_get_data(para, true)
+	-%>
+
+	var info = <%=result%>;
+	var guestInfo = info[K_MODULE];
+
+	var guestWisp = guestInfo.wisp.config;
+	var guestWifi = guestInfo.wireless.guest_wifi;
+
+	$("#VisitorSsid").val(guestWifi.ssid);
+	$("#VisitorPwd").val(guestWifi.password);
+
+	initSwitch("Switch", guestWifi.enable, function(state){
+		closeNote();
+
+		if (1 == state){
+			$("#Param").show();
+		}else{
+			$("#Param").hide();
+		}
+	});
+	
+	function errHandle(code)
+	{
+		switch(code){
+		case E_NONE:
+			return false;
+		case E_WLVISSSIDBLANK:
+			showNote(errStr.ssidEmpty);
+			break;
+		case E_WLVISSSIDLEN:
+			showNote(errStr.ssidLength);
+			break;
+		case E_WLVISSSIDILLEGAL:
+			showNote(errStr.ssidInclSpeChar);
+			break;
+		case E_WLVISSSIDPWLEN:
+			showNote(errStr.ssidPwdLength);
+			break;
+		case E_WLVISSSIDPWILLEGAL:
+			showNote(errStr.ssidPwdInclSpeChar);
+			break;
+		case E_WLVISSSIDCONFLICT2G:
+			showNote(errStr.visSsid2GSame);
+			break;
+		case E_WLVISSSIDCONFLICT5G:
+			showNote(errStr.visSsid5GSame);
+			break;
+		default:
+			break;
+		}
+
+		return true;
+	}
+
+	function checkItems(name, password) {
+		var checkName = checkSsid(name);
+
+		if(checkName == E_SSID_BLANK){
+			return E_WLVISSSIDBLANK;
+		}else if (checkName == E_SSID_LEN) {
+			return E_WLVISSSIDLEN;
+		}
+
+		if ("" == password) {
+			return E_NONE;
+		}
+
+		var checkPassword = checkWlanPwd(password);
+
+		if(checkPassword == E_WIFI_PWD_LEN){
+			return E_WLVISSSIDPWLEN;
+		}else if (checkPassword == E_WIFI_PWD_ILLEGAL) {
+			return E_WLVISSSIDPWILLEGAL;
+		}
+
+		return E_NONE;
+	}
+
+	$("#Save").click(function(){
+		if (0 == $("#Switch").attr("data-value")){
+			showConfirm(label.closeGuest, function(choose){
+				if (choose){
+					saveGuest();
+				}
+			});
+		}else{
+			saveGuest();
+		}
+	});
+	
+	function saveGuest(){
+		var data = {};
+		var para = {};
+		para.wireless = {};
+		para.wireless.guest_wifi = data;
+
+		data.enable = $("#Switch").attr("data-value");
+		data.ssid = $("#VisitorSsid").val();
+		data.password = $("#VisitorPwd").val();
+
+		if (errHandle(checkItems(data.ssid, data.password))){
+				return;
+		}
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			var code = ret[ERR_CODE];
+			if (E_NONE == code){
+				$.setTimeout(function(){
+					closeLoading();
+				}, ret[K_MODULE].wireless.guest_wifi.wait_time * 1000);
+			}else{
+				errHandle(code);
+				closeLoading();
+			}
+		});
+	}
+})();
+</script>
+<div class="head-con">
+	<a href="javascript:history.go(-1);" class="head-btn-l"><i class="head-btn icon icon_back"></i></a>
+	<h1 class="head-title">{%label.guestNet%}</h1>
+</div>
+<div class="set-con below-head">
+	<ul class="blank-bg"></ul>
+	<ul class="set-con">
+		<label class="desc-lbl">{%label.guestNet%}</label>
+		<span id="Switch" class="switch">
+			<i class="switch-circle"></i>
+		</span>
+	</ul>
+	<div id="Param" class="hidden">
+		<ul class="set-con">
+			<label class="desc-lbl">{%label.wirelessName%}</label>
+			<li class="text-con">
+				<input id="VisitorSsid" class="text hover" maxLength="32" value="" />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<label class="desc-lbl">{%label.wifiPwd%}</label>
+			<li class="text-con">
+				<input id="VisitorPwd" class="text hover" maxLength="63" value="" /><i class="tip icon-eye" data-value="0"></i>
+			</li>
+		</ul>
+	</div>
+	<ul class="blank-bg"></ul>
+	<div class="err-note hidden">
+		<i class="err-icon icon_remind_line"></i>
+		<p class="note-str"></p>
+	</div>
+	<div class="btn-con">
+		<input id="Save" class="btn" type="button" value="{%btn.save%}" />
+	</div>
+</div>

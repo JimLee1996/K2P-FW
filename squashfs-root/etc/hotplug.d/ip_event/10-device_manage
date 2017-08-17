@@ -1,0 +1,31 @@
+#!/bin/sh
+# Notice: $ACTION = ONLINE/OFFLINE; $IP; $MAC; $IFTYPE
+
+. /usr/lib/device_manage_set.sh
+
+CONFIG="device_manage"
+TYPE="limit"
+section_name=${MAC//:/_}
+
+if [ "$TYPE" = "$(uci get $CONFIG.$section_name)" ]; then
+	tx_rate=$(uci get $CONFIG.$section_name.tx_rate)
+	rx_rate=$(uci get $CONFIG.$section_name.rx_rate)
+	if [ "$ACTION" = "ONLINE" ]; then
+		if_type=$(uci get $CONFIG.$section_name.if_type)
+		block_user=$(uci get $CONFIG.$section_name.block_user)
+		if [ $if_type -ne $IFTYPE ]; then
+			uci set $CONFIG.$section_name.if_type="$IFTYPE"
+			uci commit $CONFIG
+		fi
+		rate_limit_set $IP "dst" $rx_rate "0"
+		rate_limit_set $IP "src" $tx_rate "0"
+		if [ $if_type -eq 0 -a $IFTYPE -ne 0 ]; then
+			if [ $block_user -ne 0 ]; then
+				block_user_set $IFTYPE $block_user "0"
+			fi
+		fi
+	elif [ "$ACTION" = "OFFLINE" ]; then
+		rate_limit_set $IP "dst" "0" $rx_rate
+		rate_limit_set $IP "src" "0" $tx_rate
+	fi
+fi

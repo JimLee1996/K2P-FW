@@ -1,0 +1,49 @@
+<script type="text/javascript">
+(function(){
+	<%-
+		local para = {
+			light = {config = {}}
+		}
+
+		local result = tpl_get_data(para)
+		local enable = result[K_MODULE].light.config.enable
+	-%>
+	var enable = '<%=enable%>';
+
+	initSwitch("Switch", enable);
+
+	$("#Save").click(function(){
+		var para = {};
+		para.light = {};
+		para.light.config = {enable:$("#Switch").attr("data-value")};
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			$.setTimeout(function(){
+				closeLoading();
+			}, ret[K_MODULE].light.config.wait_time * 1000);
+		});
+	});
+})();
+</script>
+<div class="head-con">
+	<a href="javascript:history.go(-1);" class="head-btn-l"><i class="head-btn icon icon_back"></i></a>
+	<h1 class="head-title">{%label.ledTip%}</h1>
+</div>
+<div class="set-con below-head">
+	<ul class="blank-bg"></ul>
+	<ul class="set-con">
+		<label class="desc-lbl">{%label.ledTip%}</label>
+		<span id="Switch" class="switch">
+			<i class="switch-circle"></i>
+		</span>
+	</ul>
+	<ul class="blank-bg"></ul>
+	<div class="err-note hidden">
+		<i class="err-icon icon_remind_line"></i>
+		<p class="note-str"></p>
+	</div>
+	<div class="btn-con">
+		<input id="Save" class="btn" type="button" value="{%btn.save%}" />
+	</div>
+</div>

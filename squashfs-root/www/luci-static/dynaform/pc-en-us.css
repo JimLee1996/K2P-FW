@@ -1,0 +1,282 @@
+body{
+  font-family: Arial;
+}
+span.head-title{
+  font-size:18px;
+}
+p.set-con-desc{
+  width:340px;
+}
+li.text-con{
+  border-radius:0;
+  border-width:0;
+  width:340px;
+}
+label.desc-lbl{
+  width:153px;
+  border-right-width:0;
+  text-align:left;
+}
+span.switch{
+  margin-right:130px;
+}
+li.text-con input.text{
+  width:153px;
+  border-radius:4px;
+  border:1px solid #DDD;
+}
+li.text-con input.text-eye{
+  width:139px;
+}
+li.text-con-focus input.text{
+  border-color:#FFBE62 !important;
+}
+ul.sel-opts-ul{
+  width:183px;
+}
+li.text-con span.select{
+  width:153px;
+  border-radius:3px;
+  border:1px solid #DDD;
+}
+li.set-con-radio{
+  width:340px;
+}
+div.err-note{
+  width:340px;
+}
+p.note-str{
+  font-size:13px;
+  width:314px;
+  word-break:keep-all;
+}
+input.btn{
+  width:340px;
+}
+div.guide-btn-con{
+  width:340px;
+}
+input.guide-btn{
+  width:160px;
+}
+div.alert{
+  width:360px;
+}
+div.alert-btn-con{
+  margin-top:40px;
+  margin:20px auto;
+}
+div.pwd-err{
+  margin:0 37px !important;
+}
+div.loading{
+  width:340px;
+}
+div.outer-circle{
+  margin:40px auto;
+}
+p.loading-tip{
+  margin-bottom:30px;
+  text-align:left;
+}
+#SavePwd{
+  width:340px;
+}
+div.left-logo span.brand{
+  visibility:hidden;
+}
+span.high-set{
+  margin-right:130px !important;
+}
+div.wan-sta{
+  width:340px !important;
+}
+p.status-detail{
+  width:314px !important;
+  word-break: keep-all;
+}
+div.user-pwd{
+  width:420px !important;
+  height:340px !important;
+}
+div.scan-con{
+  margin-left:340px !important;
+}
+input.input-file {
+  left:153px !important;
+}
+i.icon_file{
+  left:340px !important;
+}
+span.scan-file{
+  left:365px !important;
+}
+li.text-con-b label.desc-lbl{
+  width:252px !important;
+}
+li.text-con-b input.text{
+  width:54px !important;
+}
+span.safe-unit{
+  left:340px !important;
+}
+span.router-model{
+  font-size:20px !important;
+}
+div.pwd-btn{
+  margin:25px 27px !important;
+}
+p.desc-tetail{
+  text-indent:0 !important;
+}
+p.tetail-width{
+  width:340px !important;
+}
+span.mac-clone{
+  width:210px !important;
+}
+li.app-item p.app-name{
+  font-size:16px !important;
+}
+label.platform{
+  width:21.5% !important;
+}
+div.wds-auto{
+  width:420px !important;
+  height:266px !important;
+}
+#StartScan p.set-tip{
+  width:340px !important;
+}
+p.set-width,
+li.text-width,
+input.btn-width{
+  width:340px !important;
+}
+label.desc-width{
+  width:153px !important;
+}
+.items {
+  width: 250px !important;
+}
+ul.topology-desc{
+  font-weight:bold;
+}
+p.alert-tip{
+  text-align:left;
+}
+p.progress-bar-tip{
+  text-align:left;
+}
+
+@media screen and (min-device-width: 1920px){
+  p.set-con-desc {
+    width:434px !important;
+  }
+  li.text-con {
+    width:434px !important;
+  }
+  label.desc-lbl {
+    width:180px !important;
+  }
+  li.text-con input.text-eye {
+    width:208px !important;
+  }
+  input.btn {
+    width:434px !important;
+  }
+  span.mac-clone {
+    left:434px !important;
+  }
+  div.err-note {
+    width:434px !important;
+  }
+  div.wan-sta {
+    width:434px !important;
+  }
+  p.status-detail {
+    width:406px !important;
+  }
+  p.set-tip {
+    width:434px !important;
+  }
+  h2.status-title {
+    left:50px !important;
+  }
+  div.user-pwd {
+    width:520px !important;
+    height:390px !important;
+  }
+  li.login-con {
+    width:330px !important;
+  }
+  span.high-set {
+    margin-right:176px !important;
+  }
+  span.safe-unit {
+    left:434px !important;
+  }
+  li.text-con-b label.desc-lbl {
+    width:348px !important;
+  }
+  div.scan-con {
+      margin-left:434px !important;
+  }
+  input.input-file {
+    width:360px !important;
+    left:180px !important;
+  }
+  i.icon_file {
+    left:434px !important;
+  }
+  span.scan-file {
+    left:464px !important;
+  }
+  .items {
+    width:330px !important;
+  }
+  p.copyright {
+    margin-top: 45px !important;
+  }
+  div.set-con-middle span.switch {
+    margin-right:170px !important;
+  }
+  div.tab-con li.text-tip {
+    width:90% !important;
+  }
+  p.note-str {
+    width:406px !important;
+  }
+  li.app-item .app-icon {
+    width: 108px !important;
+    height: 108px !important;
+  }
+  li.app-item p.app-name {
+    font-size: 22px !important;
+  }
+  li.app-item p.app-desc {
+    font-size: 20px !important;
+  }
+  .center-con,
+  div.head {
+    min-width: 1300px !important;
+  }
+  ul.access-way {
+    width: 700px !important;
+  }
+  input.guide-btn {
+    width: 190px !important;
+  }
+  div.guide-btn-con {
+    width: 434px !important;
+  }
+  p.tetail-width {
+    width: 434px !important;
+  }
+  span.router{
+    font-size:24px !important;
+  }
+  #StartScan p.set-tip {
+    width: 434px !important;
+  }
+}

@@ -1,0 +1,4 @@
+/usr/lib/lua/luci/controller/admin/dhcp.lua
+/www/luci-static/images/app-icon/dhcp.png
+/usr/lib/lua/luci/data/dhcp.lua
+/usr/lib/lua/luci/view/pc/dhcp.htm

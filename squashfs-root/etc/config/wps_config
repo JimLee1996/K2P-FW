@@ -1,0 +1,17 @@
+config wps_config wps_para
+        option relate       '0'
+        option wps2         '0'
+        option wps2_type    '0'
+        option ssid2        'PHICOMM_2.4G_7620'
+        option encryption2  'none'
+        option wps5         '0'
+        option wps5_type    '0'
+        option ssid5        'PHICOMM_5G_7612' 
+        option encryption5  'none'
+        option disabled2     '0'
+        option disabled5     '0'
+        option pincode       ''
+        option pincode_2g    '39596321'
+        option pincode_5g    '39596406'
+        option wps_enable    '1'
+

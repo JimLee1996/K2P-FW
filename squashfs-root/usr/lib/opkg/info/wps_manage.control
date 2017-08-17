@@ -1,0 +1,8 @@
+Package: wps_manage
+Version: 1.0-2
+Depends: libc, libpthread, libuci, phicomm_libs
+Source: package/phicomm/wps_manage
+Section: Phicomm Properties
+Architecture: ramips_1004kc
+Installed-Size: 4179
+Description:  unknown

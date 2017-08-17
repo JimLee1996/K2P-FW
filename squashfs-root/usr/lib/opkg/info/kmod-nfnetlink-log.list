@@ -1,0 +1,2 @@
+/etc/modules.d/nfnetlink-log
+/lib/modules/3.10.14/nfnetlink_log.ko

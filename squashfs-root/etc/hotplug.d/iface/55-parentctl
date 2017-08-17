@@ -1,0 +1,5 @@
+#!/bin/sh
+
+if [ "$ACTION" = "ifup" -a "$INTERFACE" = "wan" ]; then
+	/etc/init.d/parentctl restart
+fi

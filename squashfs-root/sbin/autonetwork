@@ -1,0 +1,75 @@
+#!/bin/sh
+local pppoepath="/tmp/pppoedetect"
+local dhcppath="/tmp/dhcpdetect"
+local lockfile="/tmp/autonetwork.lock"
+local lcpfile="/tmp/lcpdetect"
+
+if [ -f "$lockfile" ]; then
+	exit 1
+else
+	uci set network.wan.detectwanproto="DETECTING"
+	touch $lockfile
+	local nowproto=`uci get network.wan.proto`
+	if [ "${nowproto}" = "pppoe" ]; then
+		local pppif=`ifconfig | grep pppoe-wan`
+		if [ -n "$pppif" ]; then
+			cat /dev/null > $lcpfile
+			killall -111 pppd
+			sleep 1
+			grep -q "success" $lcpfile &&
+			{
+				uci set network.wan.detectwanproto="PPPOE"
+				uci commit
+				rm $lockfile
+				exit 1
+			}
+			rm $lcpfile
+		fi
+	fi
+	cat /dev/null > $pppoepath
+	cat /dev/null > $dhcppath
+	/usr/sbin/pppoe-discovery -I eth0.2 & >/dev/null 2>&1
+	/usr/sbin/pppoe-discovery -I eth1 & >/dev/null 2>&1
+	/sbin/udhcpdiscovery & >/dev/null 2>&1
+	for i in 1 2 3 4 5 6 7 8;
+	do
+		sleep 1
+		if [ -s "$pppoepath" ] && [ -s "$dhcppath" ]; then
+			break
+		fi
+	done
+	grep -q "success" $pppoepath &&
+	{
+		uci set network.wan.detectwanproto="PPPOE"
+		uci commit
+		rm $pppoepath
+		rm $dhcppath
+		rm $lockfile
+		exit 1
+	}
+	grep -q "fail" $pppoepath &&
+	{
+		echo "no pppoe server"
+	}
+	rm $pppoepath
+	grep -q "success" $dhcppath &&
+	{
+		uci set network.wan.detectwanproto="DHCP"
+		uci commit
+		rm $dhcppath
+		rm $lockfile
+		exit 1
+	}
+	grep -q "fail" $dhcppath &&
+	{
+		echo "no dhcp server"
+	}
+	rm $dhcppath
+
+	uci set network.wan.detectwanproto="STATIC"
+	uci commit
+	rm $lockfile
+	echo "found no server default static"
+	exit 1
+fi
+

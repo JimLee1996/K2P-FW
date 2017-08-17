@@ -1,0 +1,9 @@
+Package: ppp
+Version: 2.4.7-2
+Depends: libc, kmod-ppp, libiconv-full, libubus, libubox, jshn
+Source: package/network/services/ppp
+Section: net
+Maintainer: Jo-Philipp Wich <xm@subsignal.org>
+Architecture: ramips_1004kc
+Installed-Size: 114266
+Description:  unknown

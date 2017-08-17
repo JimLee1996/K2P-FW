@@ -1,0 +1,309 @@
+<style type="text/css">
+	input.input-file{
+		position:absolute;
+		height:34px;
+		line-height:34px;
+		width:272px;
+		left: 97px;
+		opacity:0;
+		filter:alpha(opacity=0);
+		z-index:100;
+		cursor:pointer;
+	}
+	i.icon_file{
+		color:rgb(254, 152, 24);
+		display:inline-block;
+		font-size:22px;
+		position:absolute;
+		width:22px;
+		height:34px;
+		line-height:34px;
+		left: 300px;
+		cursor:pointer;
+	}
+	span.scan-file{
+		color:rgb(254, 152, 24);
+		display:inline-block;
+		font-size:14px;
+		position:absolute;
+		width:40px;
+		height:34px;
+		line-height:34px;
+		left: 325px;
+		cursor:pointer;
+	}
+	.download-firmware{
+		color:#4F5356;
+		font-size:14px;
+		margin:20px 50px 10px;
+		text-align:center;
+		height:34px;
+		line-height:34px;
+	}
+	a.firmware-link{
+		color:rgb(254, 152, 24);
+	}
+	div.scan-con{
+		height:34px;
+		width:72px;
+		line-height:34px;
+		vertical-align:middle;
+		font-size:14px;
+		text-align:left;
+		margin-top:-34px;
+		margin-left:300px;
+	}
+	/*1080p适配*/
+	@media screen and (min-device-width:1920px){
+		.download-firmware {
+			font-size: 18px;
+		}
+		input.input-file {
+			height: 46px;
+			line-height: 46px;
+			width: 328px;
+			left: 146px;
+		}
+		i.icon_file {
+			font-size: 28px;
+			width: 28px;
+			height: 46px;
+			line-height: 46px;
+			left: 400px;
+		}
+		span.scan-file {
+			font-size: 18px;
+			height: 46px;
+			line-height: 46px;
+			left: 430px;
+		}
+		div.scan-con {
+			height: 46px;
+			width: 78px;
+			line-height: 46px;
+			margin-top: -46px;
+			margin-left: 400px;
+		}
+	}
+</style>
+<%
+	local para = {
+		device = {info = {}}
+	}
+
+	local result = tpl_get_data(para)
+	local data = result[K_MODULE].device.info
+-%>
+<script type="text/javascript">
+(function(){
+	$("#CurSwVer").val('<%=data.sw_ver%>');
+
+	var action  = $.orgURL('/system/upgrade');
+	$("#UploadFw").attr('action', action);
+
+	// 上传升级
+	function setFileVal(obj, objId) {
+		var p = obj.value;
+		var lastindex = p.lastIndexOf("\\");
+		var nameStr = nameTooLenHadl(p.substring(lastindex+1));
+		$("#"+objId).val(nameStr);
+		$("#"+objId).attr("title", p.substring(lastindex+1));
+		$(obj).attr("title", p.substring(lastindex+1));
+		$("#ImgName").val(p.substring(lastindex+1));
+		$("#Step").val("1");
+	}
+
+	function nameTooLenHadl(fileName){
+		var shortName;
+
+		if (fileName.length >= 23){
+			shortName = fileName.substr(0, 20) + "...";
+		}else{
+			shortName = fileName;
+		}
+
+		return shortName;
+	}
+
+	$("#ScanFile").change(function(){
+		setFileVal(this,"UpgradeFile");
+	});
+
+	$("#MnulUpgrade").click(function(){
+		var str = $("#ScanFile").val();
+		var lastindex = str.lastIndexOf(".");
+
+		if (OS.iPad){
+			showAlert(label.sysLimitTip);
+			return;
+		}
+
+		if (str.length <= 0) {
+			showAlert(errStr.upgradeFileEmpty);
+			return;
+		}
+		if (str.substring(lastindex + 1) != "bin") {
+			showAlert(errStr.upgradeFileForm);
+			return;
+		}
+
+		showLoading(label.uploadingTip);
+
+		$("#UploadIf").one("load", function(){
+			iFrmOnload("UploadIf", function(data){
+				var code = data[ERR_CODE];
+				if (code == E_NONE){
+					$.setTimeout(upgradeStatus, 1000);
+				}else if(code == E_INVUPFILE){
+					showAlert(errStr.upgradeFileErr);
+				}else if(code == E_UPGRADE_UNDERWAY){
+					showAlert(errStr.upgradeUnderway);
+				}
+			});
+		});
+
+		var formObj = document.uploadFw;
+		formObj.submit();
+		formObj.reset();
+	});
+
+	var upgradeStatusHd = null;
+	function upgradeStatus(){
+		var para = {
+			system:{upgrade_status:null}
+		};
+
+		apiGet(para, function(ret){
+			var info = ret[K_MODULE]["system"]["upgrade_status"];
+			var status = info.running_status;
+			var code = parseInt(info.status_code, 10);
+
+			if(4 == status){
+				if (0 == code){
+					clearTimeout(upgradeStatusHd);
+
+					showProgressBar(label.upgrading, label.upgradingTips, ROUTER.time.manualUpgrade, function(){
+						window.location.reload();
+					});
+
+					$.setTimeout(function(){
+						// 检测LAN是否可以连接DUT
+						lanDetecting(function(){
+							window.location.reload();
+						});
+					}, ROUTER.time.detectDelay);
+				}
+			}else if(0 == status){
+				clearTimeout(upgradeStatusHd);
+				statusHandle(status, code);
+			}else{
+				switch(code){
+				case 0:
+					showLoading(label.upgradeChecking);
+					upgradeStatusHd = $.setTimeout(upgradeStatus, 1000);
+					break;
+				default:
+					clearTimeout(upgradeStatusHd);
+					statusHandle(status, code);
+					break;
+				}
+			}
+		});
+	}
+
+	function statusHandle(status, code){
+		var noteStr = "";
+
+		if(3 == status){
+			switch(code){
+			case 1://不合法升级文件
+				noteStr = errStr.upgradeFileErr;
+				break;
+			case 2://不匹配硬件设备
+				noteStr = errStr.fwNoMatchHw;
+				break;
+			case 3://不匹配产品型号
+				noteStr = errStr.fwNoMatchPrdct;
+				break;
+			case 4://当前版本不满足最低版本要求
+				noteStr = errStr.fwVerTooLow;
+				break;
+			case 5://当前固件版本不支持版本降级
+				noteStr = errStr.noAllowReduceVer;
+				break;
+			case 6://系统错误
+				noteStr = errStr.systemErr;
+				break;
+			case 7://有其他升级程序正在运行
+				noteStr = errStr.upgradeUnderway;
+				break;
+			case 8://校验信息获取失败
+				noteStr = errStr.checkInfoFail;
+				break;
+			default:
+				noteStr = errStr.unknownErr + status + code;
+				break;
+			}
+		}else{
+			noteStr = errStr.unknownErr + status + code;
+		}
+
+		showAlert(noteStr);
+	}
+
+})();
+</script>
+<div class="help hidden">
+	<ul class="help-content">
+		<li class="help-head">
+			<img class="app-icon" src="/luci-static/images/app-icon/upload.png?_=20170809165512" />
+			<span class="help-title">{%label.manualUpgrade%}</span>
+		</li>
+		<li class="summary">{%helpStr.manualUpgrade%}</li>
+		<li class="summary">{%helpStr.manualUpgradeTip%}</li>
+	</ul>
+</div>
+<div class="head-con">
+	<img class="app-icon" src="/luci-static/images/app-icon/upload.png?_=20170809165512" />
+	<a href="javascript:history.go(-1);" class="head-btn-l">
+		<i class="head-btn icon icon_back"></i>
+		<span class="head-title">{%label.manualUpgrade%}</span>
+	</a>
+</div>
+<div class="set-con below-head">
+	<ul class="set-con">
+		<li class="text-con">
+			<label class="desc-lbl">{%label.curVer%}</label>
+			<input id="CurSwVer" class="text hover" readonly="readonly" value="" />
+		</li>
+	</ul>
+	<iframe id="UploadIf" name="uploadIf" class="hidden"></iframe>
+	<form name="uploadFw" id="UploadFw" action="system/upgrade" method="post" enctype="multipart/form-data" target="uploadIf">
+		<ul class="set-con">
+			<li class="text-con">
+				<label class="desc-lbl">{%label.upgradeFile%}</label>
+				<input type="text" id="UpgradeFile" class="text hover" placeholder="{%label.fwFileTip%}" readonly="readonly" value="" />
+				<div class="scan-con">
+					<input type="file" class="input-file" id="ScanFile" name="file" />
+					<i class="icon_file"></i>
+					<span class="scan-file">{%label.scan%}</span>
+				</div>
+			</li>
+		</ul>
+		<input type="hidden" name="step" id="Step" value="0" />
+		<input type="hidden" name="filename" id="ImgName" />
+	</form>
+	<div class="err-note hidden">
+		<i class="err-icon icon_remind_line"></i>
+		<p class="note-str"></p>
+	</div>
+	<div class="download-firmware">
+		<label>{%label.downloadTip%}</label>
+		<a href="http://www.phicomm.com/cn/support.php/Soho/software_support/t/sm.html" target="_blank" class="firmware-link">
+			<span>{%label.downloadFirmware%}</span>
+		</a>
+	</div>
+	<div class="btn-con">
+		<input id="MnulUpgrade" class="btn" type="button" value="{%btn.mnulUpgrade%}" />
+	</div>
+</div>

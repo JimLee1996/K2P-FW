@@ -1,0 +1,23 @@
+#!/bin/sh /etc/rc.common
+
+START=90
+STOP=90
+
+# only in case that firewall is disabled
+
+start() {
+	rmmod iptable_filter
+	rmmod iptable_mangle
+	rmmod iptable_raw
+	lan=`uci get -q network.lan.ipaddr | awk -F"." '{print $1"."$2"."$3"."0}'`
+	wan=`uci get -q network.wan.ifname`
+	[ "$lan" != "" ] && [ "$wan" != "" ] && {
+		iptables -t nat -A POSTROUTING -s $lan/24 -o $wan -j MASQUERADE
+	}
+}
+
+stop() {
+	echo > /dev/null
+}
+
+

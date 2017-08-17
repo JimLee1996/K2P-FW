@@ -1,0 +1,8 @@
+Package: base-files
+Version: 156-unknown
+Depends: libc, netifd, procd, jsonfilter
+Source: package/base-files
+Section: base
+Architecture: ramips_1004kc
+Installed-Size: 47044
+Description:  unknown

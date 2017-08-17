@@ -1,0 +1,68 @@
+#!/bin/bash
+
+and_res()
+{
+	local res=""
+	for i in 1 2 3 4
+	do
+		let "res_num = $(echo $1 | cut -d '.' -f $i) & $(echo $2 | cut -d '.' -f $i)"
+		if [ -n "$res" ]; then
+			res="$res.$res_num"
+		else
+			res="$res_num"
+		fi
+	done
+	echo "$res"
+}
+
+if [ "$ACTION" = "ifup" -a "$INTERFACE" = "wan" ]; then
+	wan_ip=$(ifconfig | grep Bcast | sed -n 2p | cut -d ':' -f 2 | cut -d ' ' -f 1)
+	wan_mask=$(ifconfig | grep Bcast | sed -n 2p | cut -d ':' -f 4)
+	if [ -n "$wan_ip" -a -n "$wan_mask" ]; then
+		lan_ip=$(ifconfig | grep Bcast | sed -n 1p | cut -d ':' -f 2 | cut -d ' ' -f 1)
+		lan_mask=$(ifconfig | grep Bcast | sed -n 1p | cut -d ':' -f 4)
+		if [ -n "$lan_ip" -a -n "$lan_mask" ]; then
+			lan_res=$(and_res $lan_ip $lan_mask)
+			wan_res=$(and_res $wan_ip $wan_mask)
+			if [ $lan_res = $wan_res ]; then
+				ip_type=$(echo $lan_ip | cut -d '.' -f -3)
+				if [ $ip_type = "192.168.2" ]; then
+					logger -t $0 -p user.notice -s "WAN/LAN IP conflict, wan_ip = $wan_ip, lan_ip = $lan_ip"
+					uci set network.lan.ipaddr=10.10.10.1
+					sed -i -e 's/\(.*\) \(phicomm.me\)/10.10.10.1 \2/' /etc/hosts
+					sed -i -e 's/\(.*\) \(p.to\)/10.10.10.1 \2/' /etc/hosts
+					if [ "$(uci get dhcp.welcome)" == "dnsmasq" ]; then
+						uci delete dhcp.welcome.address
+						uci add_list dhcp.welcome.address="/#/10.10.10.1"
+						uci commit dhcp
+					fi
+					logger -t $0 -p user.notice -s "LAN IP change to 10.10.10.1"
+				elif [ $ip_type = "10.10.10" ]; then
+					logger -t $0 -p user.notice -s "WAN/LAN IP conflict, wan_ip = $wan_ip, lan_ip = $lan_ip"
+					uci set network.lan.ipaddr=172.16.10.1
+					sed -i -e 's/\(.*\) \(phicomm.me\)/172.16.10.1 \2/' /etc/hosts
+					sed -i -e 's/\(.*\) \(p.to\)/172.16.10.1 \2/' /etc/hosts
+					if [ "$(uci get dhcp.welcome)" == "dnsmasq" ]; then
+						uci delete dhcp.welcome.address
+						uci add_list dhcp.welcome.address="/#/172.16.10.1"
+						uci commit dhcp
+					fi
+					logger -t $0 -p user.notice -s "LAN IP change to 172.16.10.1"
+				else
+					logger -t $0 -p user.notice -s "WAN/LAN IP conflict, wan_ip = $wan_ip, lan_ip = $lan_ip"
+					uci set network.lan.ipaddr=192.168.2.1
+					sed -i -e 's/\(.*\) \(phicomm.me\)/192.168.2.1 \2/' /etc/hosts
+					sed -i -e 's/\(.*\) \(p.to\)/192.168.2.1 \2/' /etc/hosts
+					if [ "$(uci get dhcp.welcome)" == "dnsmasq" ]; then
+						uci delete dhcp.welcome.address
+						uci add_list dhcp.welcome.address="/#/192.168.2.1"
+						uci commit dhcp
+					fi
+					logger -t $0 -p user.notice -s "LAN IP change to 192.168.2.1"
+				fi
+				uci commit network
+				/etc/init.d/network restart
+			fi
+		fi
+	fi
+fi

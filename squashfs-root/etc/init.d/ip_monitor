@@ -1,0 +1,25 @@
+#!/bin/sh /etc/rc.common
+
+######################################################################
+# Copyright (C) 2016. Shanghai Feixun Communication Co.,Ltd.
+# #
+# # DISCREPTION   : ip_monitorr自启动脚本
+# # AUTHOR        : kaiwen.zhao <kaiewn.zhao@feixun.com.cn>
+# # CREATED DATE  : 2016-04-14
+# # MODIFIED DATE : 
+# ######################################################################
+
+START=91
+
+boot() {
+	/usr/bin/ip_monitor &
+}
+
+start() {
+	/usr/bin/ip_monitor &
+}
+
+stop() {
+    killall -9 ip_monitor
+}
+

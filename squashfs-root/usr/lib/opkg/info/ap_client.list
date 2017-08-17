@@ -1,0 +1,3 @@
+/usr/lib/lua/apcli.so
+/lib/libapcli.so
+/usr/bin/apcli_daemon

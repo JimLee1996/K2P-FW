@@ -1,0 +1,58 @@
+#!/bin/sh /etc/rc.common
+
+######################################################################
+#
+# Function : luci script, remote
+#
+# Creater : xiangda.zhang@feixun.com.cn, 2016-05-04
+#
+# Copyright : Shanghai Phicomm
+#
+######################################################################
+
+START=60
+
+start() {
+
+	stop
+
+	local remote_enable=$(uci get remote.remote.remote_enable)
+	local remote_ip=$(uci get remote.remote.remote_ip)
+	local remote_port=$(uci get remote.remote.remote_port)
+	if [ $remote_enable == 0 ]; then
+		return
+	fi
+
+	wan_name=$(uci get network.wan.ifname)
+	wan_proto=$(uci get network.wan.proto)
+	if [ ${wan_proto} != "pppoe" ]; then
+		wan_ip=$(ifconfig $wan_name | grep "inet addr" | awk '{print $2}' | awk -F ":" '{print $2}')
+	else
+		wan_ip=$(ifconfig pppoe-wan | grep "inet addr" | awk '{print $2}' | awk -F ":" '{print $2}')
+	fi
+	if [ $wan_ip == "0.0.0.0" ]; then
+		return
+	fi
+
+	local lan_ip=$(uci get network.lan.ipaddr)
+	iptables -t nat -N PREROUTING_REMOTE
+	iptables -t nat -I PREROUTING -p tcp -j PREROUTING_REMOTE
+
+	if [ $remote_ip == "255.255.255.255" ]; then
+		iptables -t nat -A PREROUTING_REMOTE -p tcp -d $wan_ip --dport $remote_port -j DNAT --to-destination $lan_ip:80
+	else
+		iptables -t nat -A PREROUTING_REMOTE -p tcp -s $remote_ip -d $wan_ip --dport $remote_port -j DNAT --to-destination $lan_ip:80
+	fi
+}
+
+restart() {
+	start
+}
+
+stop() {
+	if [ $(iptables -t nat -S | grep -c PREROUTING_REMOTE) -gt 0 ]; then
+		iptables -t nat -D PREROUTING -p tcp -j PREROUTING_REMOTE
+		iptables -t nat -F PREROUTING_REMOTE
+		iptables -t nat -X PREROUTING_REMOTE
+	fi
+}

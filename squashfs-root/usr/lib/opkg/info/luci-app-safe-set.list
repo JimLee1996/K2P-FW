@@ -1,0 +1,6 @@
+/usr/lib/lua/luci/data/safe_set.lua
+/usr/lib/lua/luci/view/pc/safeMng.htm
+/etc/config/safeset
+/www/luci-static/images/app-icon/security.png
+/etc/init.d/safeset
+/usr/lib/lua/luci/controller/admin/safe_set.lua
