@@ -18,4 +18,5 @@
 # EOF
 # fi
 
-exec /bin/ash --login
+# exec /bin/ash --login
+exec /bin/login
