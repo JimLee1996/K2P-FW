@@ -1,3 +1,6 @@
+修改教程请参看我的另一个repo
+[K2-163FW](https://github.com/JimLee1996/K2-163FW)
+
 ##### removed
 
 - adpush
@@ -56,6 +59,4 @@ Removing package telnetd_startup from root...
 ```
 
 
-
-- ​
 
