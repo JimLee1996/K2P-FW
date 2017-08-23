@@ -1,8 +1,0 @@
-Package: encryconfig
-Version: 1
-Depends: libc, libopenssl
-Source: package/phicomm/encryconfig
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 3389
-Description:  unknown

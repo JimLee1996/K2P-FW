@@ -1,2 +1,0 @@
-config inet	'internet' 
-	option link 'down'

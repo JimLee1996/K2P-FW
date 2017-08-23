@@ -1,7 +1,0 @@
-#!/bin/sh
-. /lib/functions.sh
-
-uci set ddns.myddns.ip_source=web
-uci commit ddns
-
-exit 0

@@ -1,4 +1,0 @@
-local o=require("luci.phicomm.error")module("luci.controller.admin.safe_set",package.seeall)function index()entry({"pc","safeMng.htm"},template("pc/safeMng")).leaf=true
-register_keyword_data("safe_set","config","get_safe_config")end
-function get_safe_config(e)local e=require("luci.model.uci").cursor()local e={enable=e:get("safeset","config","spi_enable")or"1",dos=e:get("safeset","config","ddos_enable")or"0",icmp_flood=e:get("safeset","config","icmp_flood")or"1",icmp_threshold=e:get("safeset","config","icmpflood_rate")or"50",udp_flood=e:get("safeset","config","udp_flood")or"1",udp_threshold=e:get("safeset","config","udpflood_rate")or"500",tcp_flood=e:get("safeset","config","syn_flood")or"1",tcp_threshold=e:get("safeset","config","synflood_rate")or"50",ping_disable=e:get("safeset","config","ping_disable")or"0"}return o.E_NONE,e
-end

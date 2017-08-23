@@ -1,8 +1,0 @@
-Package: gen_dev_info
-Version: 1
-Depends: libc
-Source: package/phicomm/gen_dev_info
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 473
-Description:  unknown

@@ -1,8 +1,0 @@
-Package: router-helper
-Version: 1
-Depends: libc, libubox, libuci, libpthread, phicomm_libs, libubus, jshn
-Source: package/phicomm/router-helper
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 11332
-Description:  unknown

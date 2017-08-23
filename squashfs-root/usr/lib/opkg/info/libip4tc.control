@@ -1,8 +1,0 @@
-Package: libip4tc
-Version: 1.4.21-1
-Depends: libc
-Source: package/network/utils/iptables
-Section: libs
-Architecture: ramips_1004kc
-Installed-Size: 10198
-Description:  unknown

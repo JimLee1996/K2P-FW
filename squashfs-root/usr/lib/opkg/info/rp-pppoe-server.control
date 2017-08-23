@@ -1,8 +1,0 @@
-Package: rp-pppoe-server
-Version: 3.11-1
-Depends: libc, ppp
-Source: package/phicomm/rp-pppoe
-Section: net
-Architecture: ramips_1004kc
-Installed-Size: 33616
-Description:  unknown

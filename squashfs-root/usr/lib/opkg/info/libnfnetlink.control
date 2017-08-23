@@ -1,9 +1,0 @@
-Package: libnfnetlink
-Version: 1.0.1-1
-Depends: libc
-Source: package/libs/libnfnetlink
-Section: libs
-Maintainer: Jo-Philipp Wich <jow@openwrt.org>
-Architecture: ramips_1004kc
-Installed-Size: 8978
-Description:  unknown

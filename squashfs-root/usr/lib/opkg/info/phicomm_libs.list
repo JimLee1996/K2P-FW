@@ -1,5 +1,0 @@
-/etc/config/phicinet
-/usr/lib/lua/phic.so
-/lib/libphic.so
-/lib/libphic_flash.so
-/usr/bin/verrevcmp

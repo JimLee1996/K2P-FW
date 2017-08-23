@@ -1,9 +1,0 @@
-Package: resolveip
-Version: 2
-Depends: libc
-Source: package/network/utils/resolveip
-Section: utils
-Maintainer: Jo-Philipp Wich <jow@openwrt.org>
-Architecture: ramips_1004kc
-Installed-Size: 1867
-Description:  unknown

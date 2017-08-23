@@ -1,3 +1,0 @@
-config appportfwd 'config'
-	option enable '0'
-

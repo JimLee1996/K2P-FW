@@ -1,1 +1,0 @@
-local c=require"luci.ccache"module"luci.cacheloader"c.cache_ondemand()

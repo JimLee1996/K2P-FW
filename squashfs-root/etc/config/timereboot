@@ -1,6 +1,0 @@
-
-config timereboot 'timereboot'
-	option enable '0'
-	option hour '0'
-	option minute '0'
-

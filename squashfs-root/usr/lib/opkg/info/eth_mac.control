@@ -1,8 +1,0 @@
-Package: eth_mac
-Version: 1
-Depends: libc
-Source: package/ramips/applications/eth_mac
-Section: MTK Properties
-Architecture: ramips_1004kc
-Installed-Size: 2755
-Description:  unknown

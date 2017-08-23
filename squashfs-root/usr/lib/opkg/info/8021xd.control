@@ -1,8 +1,0 @@
-Package: 8021xd
-Version: 1
-Depends: libc
-Source: package/ramips/applications/8021xd
-Section: MTK Properties
-Architecture: ramips_1004kc
-Installed-Size: 24128
-Description:  unknown

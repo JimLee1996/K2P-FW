@@ -1,8 +1,0 @@
-Package: iptables-mod-hashlimit
-Version: 1.4.21-1
-Depends: libc, iptables, kmod-ipt-hashlimit
-Source: package/network/utils/iptables
-Section: net
-Architecture: ramips_1004kc
-Installed-Size: 5265
-Description:  unknown

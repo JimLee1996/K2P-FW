@@ -1,9 +1,0 @@
-#!/bin/sh
-
-if [ "$ACTION" = "ifdown" ]; then
-    uci set network.wan.status="down"
-elif [ "$ACTION" = "ifup" ]; then
-	uci set network.wan.status="up"
-fi
-
-

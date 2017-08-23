@@ -1,6 +1,0 @@
-#!/bin/sh /etc/rc.common
-
-START=45
-start() {
-	/www/cgi-bin > /dev/null 2>1
-}

@@ -1,8 +1,0 @@
-Package: libxtables
-Version: 1.4.21-1
-Depends: libc
-Source: package/network/utils/iptables
-Section: libs
-Architecture: ramips_1004kc
-Installed-Size: 17203
-Description:  unknown

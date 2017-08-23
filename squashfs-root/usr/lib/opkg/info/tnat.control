@@ -1,8 +1,0 @@
-Package: tnat
-Version: 1
-Depends: libc, libuci, libubox, phicomm_libs
-Source: package/phicomm/tnat
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 8069
-Description:  unknown

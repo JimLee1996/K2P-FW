@@ -1,4 +1,0 @@
-/www/luci-static/images/app-icon/diagnose.png
-/usr/lib/lua/luci/controller/admin/diagnosis.lua
-/usr/lib/lua/luci/view/h5/diagnose.htm
-/usr/lib/lua/luci/view/pc/diagnose.htm

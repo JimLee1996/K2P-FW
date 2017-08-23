@@ -1,5 +1,0 @@
-/usr/lib/lua/luci/controller/admin/guest.lua
-/www/luci-static/images/app-icon/guest.png
-/usr/lib/lua/luci/view/h5/guest.htm
-/usr/lib/lua/luci/data/guest.lua
-/usr/lib/lua/luci/view/pc/guest.htm

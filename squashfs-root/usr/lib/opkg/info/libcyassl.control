@@ -1,8 +1,0 @@
-Package: libcyassl
-Version: 3.2.0-1
-Depends: libc
-Source: package/libs/cyassl
-Section: libs
-Architecture: ramips_1004kc
-Installed-Size: 76443
-Description:  unknown

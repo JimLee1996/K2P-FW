@@ -1,8 +1,0 @@
-Package: ip_monitor
-Version: 1
-Depends: libc, libubox, libuci, libpthread
-Source: package/phicomm/ip_monitor
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 2318
-Description:  unknown

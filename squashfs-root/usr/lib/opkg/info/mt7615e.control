@@ -1,8 +1,0 @@
-Package: mt7615e
-Version: MT7615_LinuxAP_V4.4.1.1_20170116
-Depends: libc
-Source: package/ramips/drivers/mt7615e
-Section: opt
-Architecture: ramips_1004kc
-Installed-Size: 7255
-Description:  unknown

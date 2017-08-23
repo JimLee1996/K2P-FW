@@ -1,8 +1,0 @@
-/usr/lib/lua/luci/view/h5/guideNetworkSet.htm
-/usr/lib/lua/luci/view/pc/guideNetworkSet.htm
-/usr/lib/lua/luci/controller/admin/network.lua
-/etc/cfgAdaptor/network.sh
-/usr/lib/lua/luci/data/network.lua
-/usr/lib/lua/luci/view/pc/networkSet.htm
-/www/luci-static/images/app-icon/internet.png
-/usr/lib/lua/luci/view/h5/networkSet.htm

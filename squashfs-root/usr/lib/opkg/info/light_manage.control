@@ -1,8 +1,0 @@
-Package: light_manage
-Version: 1
-Depends: libc, libubox, libuci, libpthread, phicomm_libs, libubus, jshn
-Source: package/phicomm/light_manage
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 3806
-Description:  unknown

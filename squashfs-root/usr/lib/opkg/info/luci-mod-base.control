@@ -1,9 +1,0 @@
-Package: luci-mod-base
-Version: 1.0.0-1
-Depends: libc, luci-lib-web, luci-lib-ipkg
-Source: package/ramips/ui/luci-ux
-Section: luci
-Maintainer: LuCI Development Team <luci@lists.subsignal.org>
-Architecture: all
-Installed-Size: 551517
-Description:  unknown

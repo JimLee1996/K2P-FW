@@ -1,6 +1,0 @@
-/etc/uci-defaults/99-speedtest
-/etc/init.d/speedtest
-/usr/bin/speedtest
-/etc/config/speedtest
-/usr/share/speedtest.xml
-/usr/sbin/speedtestd

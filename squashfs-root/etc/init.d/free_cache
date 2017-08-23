@@ -1,6 +1,0 @@
-#!/bin/sh /etc/rc.common
-
-START=90
-boot() {
-	/bin/free_caches.sh &
-}

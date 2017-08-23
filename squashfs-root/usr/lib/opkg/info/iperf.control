@@ -1,9 +1,0 @@
-Package: iperf
-Version: 2.0.5-1
-Depends: libc, uclibcxx
-Source: package/network/utils/iperf
-Section: net
-Maintainer: Felix Fietkau <nbd@openwrt.org>
-Architecture: ramips_1004kc
-Installed-Size: 24872
-Description:  unknown

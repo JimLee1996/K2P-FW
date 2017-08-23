@@ -1,9 +1,0 @@
-Package: luci-app-diagnose
-Version: 1.0.0-1
-Depends: libc
-Source: package/ramips/ui/luci-ux
-Section: luci
-Maintainer: LuCI Development Team <luci@lists.subsignal.org>
-Architecture: ramips_1004kc
-Installed-Size: 11834
-Description:  unknown

@@ -1,5 +1,0 @@
-/etc/hotplug.d/rth/00-wan-link
-/sbin/rth-call
-/usr/bin/router-helper
-/etc/init.d/router-helper
-/etc/hotplug.d/rth/01-inet-link

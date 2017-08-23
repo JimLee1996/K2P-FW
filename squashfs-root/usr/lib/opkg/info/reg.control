@@ -1,8 +1,0 @@
-Package: reg
-Version: 1
-Depends: libc, kmod-rdm
-Source: package/ramips/applications/reg
-Section: MTK Properties
-Architecture: ramips_1004kc
-Installed-Size: 3086
-Description:  unknown

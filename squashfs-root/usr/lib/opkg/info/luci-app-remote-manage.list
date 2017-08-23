@@ -1,8 +1,0 @@
-/etc/init.d/remote
-/etc/config/remote
-/usr/lib/lua/luci/view/pc/remoteMng.htm
-/usr/lib/lua/luci/view/h5/remoteMng.htm
-/etc/hotplug.d/iface/75-remote
-/usr/lib/lua/luci/controller/admin/remote_mng.lua
-/www/luci-static/images/app-icon/remote.png
-/usr/lib/lua/luci/data/remote_mng.lua

@@ -1,5 +1,0 @@
-#!/bin/sh
-
-if [ "$ACTION" = "ifup" ]; then
-	/etc/init.d/portfwd restart
-fi

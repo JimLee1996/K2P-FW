@@ -1,9 +1,0 @@
-
-config result 'result'
-	option downband '0'
-	option upband '0'
-
-config do 'do'
-	option lastdownband '0'
-	option lastupband '0'
-	option times '0'

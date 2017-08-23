@@ -1,8 +1,0 @@
-Package: uboot-sop-mtk
-Version: 1
-Depends: libc
-Source: package/boot/uboot-mtk
-Section: boot
-Architecture: ramips_1004kc
-Installed-Size: 105
-Description:  unknown

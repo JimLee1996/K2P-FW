@@ -1,8 +1,0 @@
-Package: schemeupgrade
-Version: 1.0-1
-Depends: libc, libpthread, libuci
-Source: package/phicomm/schemeupgrade
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 25265
-Description:  unknown

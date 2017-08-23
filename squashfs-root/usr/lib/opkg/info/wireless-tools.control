@@ -1,9 +1,0 @@
-Package: wireless-tools
-Version: 29-5
-Depends: libc
-Source: package/network/utils/wireless-tools
-Section: net
-Maintainer: Felix Fietkau <nbd@openwrt.org>
-Architecture: ramips_1004kc
-Installed-Size: 22604
-Description:  unknown

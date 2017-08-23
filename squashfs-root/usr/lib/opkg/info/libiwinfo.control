@@ -1,9 +1,0 @@
-Package: libiwinfo
-Version: 51
-Depends: libc, libnl-tiny, phicomm_libs
-Source: package/network/utils/iwinfo
-Section: libs
-Maintainer: Jo-Philipp Wich <xm@subsignal.org>
-Architecture: ramips_1004kc
-Installed-Size: 23697
-Description:  unknown

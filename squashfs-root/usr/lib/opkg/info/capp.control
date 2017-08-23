@@ -1,8 +1,0 @@
-Package: capp
-Version: 1
-Depends: libc, libuci, libjson-c, libopenssl
-Source: package/phicomm/capp
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 13663
-Description:  unknown

@@ -1,8 +1,0 @@
-Package: timereboot
-Version: 1
-Depends: libc
-Source: package/phicomm/timereboot
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 367
-Description:  unknown

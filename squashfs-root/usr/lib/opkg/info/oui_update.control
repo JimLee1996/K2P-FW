@@ -1,8 +1,0 @@
-Package: oui_update
-Version: 1
-Depends: libc, libcurl, libjson-c
-Source: package/phicomm/oui_update
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 2448
-Description:  unknown

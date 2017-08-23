@@ -1,8 +1,0 @@
-Package: autodetect
-Version: 1
-Depends: libc, phicomm_libs
-Source: package/phicomm/autodetect
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 8685
-Description:  unknown
