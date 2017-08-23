@@ -1,8 +1,0 @@
-Package: sys_protect_daemon
-Version: 1
-Depends: libc, librt, phicomm_libs
-Source: package/phicomm/sys_protect_daemon
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 3404
-Description:  unknown

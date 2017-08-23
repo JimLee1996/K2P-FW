@@ -1,6 +1,0 @@
-config core main
-    option uploaded_fixed '0'
-    option wireless_md5 '0'
-    option reboot_flag '0'
-    option log '0'
-    option parent_used '0'

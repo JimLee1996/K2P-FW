@@ -1,8 +1,0 @@
-Package: data_collect
-Version: 1
-Depends: libc, libuci, libcurl, ap_client, libjson-c, phicomm_libs
-Source: package/phicomm/data_collect
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 16571
-Description:  unknown
