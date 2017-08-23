@@ -1,0 +1,6 @@
+#!/bin/sh /etc/rc.common
+
+START=91
+
+start() {
+}

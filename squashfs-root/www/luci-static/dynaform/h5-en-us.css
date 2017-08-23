@@ -1,0 +1,57 @@
+#FactoryReset li.app-item{
+  border-width:0 1px 1px 0;
+}
+label.desc-lbl{
+  font-size:0.375rem !important;
+  width:40% !important;
+}
+li.text-con input.text{
+  width:4.75rem !important;
+}
+li.text-con input.text-eye{
+  width:4rem !important;
+  padding-right:1rem;
+}
+li.text-con span.select{
+  width:4.75rem !important;
+}
+ul.set-con input.text{
+  width:4.75rem !important;
+}
+ul.set-con input.text-eye{
+  width:4rem !important;
+  padding-right:1rem;
+}
+i.err-icon{
+  margin-left:0.65rem !important;
+}
+p.note-str{
+  width:80% !important;
+}
+li.app-item p{
+  font-size:0.325rem !important;
+}
+p.desc-tetail{
+  text-indent:0 !important;
+}
+span.radio label{
+  font-size:0.333rem;
+}
+input.textA{
+  font-size:0.375rem;
+}
+ul.detail{
+  font-size:0.375rem;
+}
+input.btn-modify{
+  font-size:0.333rem !important;
+}
+p.status-detail{
+  width:80% !important;
+}
+p.alert-tip{
+  text-align:left;
+}
+p.loading-tip{
+  text-align:left;
+}

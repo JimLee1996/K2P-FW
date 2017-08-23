@@ -1,0 +1,156 @@
+<style type="text/css">
+	p.set-width{
+		width:320px;
+	}
+	li.text-width{
+		width:320px;
+	}
+	label.desc-width{
+		width:116px;
+	}
+	input.btn-width{
+		width:320px;
+	}
+	/*1080p*/
+	@media screen and (min-device-width: 1920px){
+		li.text-con,
+		p.set-width,
+		input.btn-width{
+		width:400px;
+		}
+		label.desc-width{
+		width:146px;
+		}
+	}
+</style>
+
+<script type="text/javascript">
+(function(){
+	<%
+		local para = {
+			firewall = {dmz = {}}
+		}
+
+		local result = tpl_get_data(para)
+		local dmz = result[K_MODULE].firewall.dmz
+	-%>
+
+	var enable = '<%=dmz.enable%>';
+	var ip = '<%=dmz.ip%>';
+
+	initSwitch("Switch", enable, function(state){
+		if (1 == state){
+			$("#Param").show();
+		}else{
+			$("#Param").hide();
+		}
+	});
+
+	$("#DmzIp").val(ip);
+
+	function errHandle(code)
+	{
+		switch(code){
+		case E_NONE:
+			return false;
+		case E_INVDMZIP:
+			showNote(errStr.ipAddrErr);
+			break;
+		case E_INVDMZLANIP:
+			showNote(errStr.dmzSameLanIp);
+			break;
+		case E_INVDMZGWLANIP:
+			showNote(errStr.dmzIpEqLanIp);
+			break;
+		case E_INVDMZIPNULL:
+			showNote(errStr.ipIsEmpty);
+			break;
+		default:
+			break;
+		}
+		return true;
+	}
+
+	$("#Save").click(saveDmz);
+
+	function saveDmz(){
+		var data = {};
+		var para = {};
+		para.firewall = {};
+		para.firewall.dmz = data;
+
+		data.enable = $("#Switch").attr("data-value");
+		data.ip = $("#DmzIp").val();
+
+		if (errHandle(checkDmzIp(data.ip))){
+			return;
+		}
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			var code = ret[ERR_CODE];
+			if (E_NONE == code){
+				$.setTimeout(function(){
+					closeLoading();
+				}, 2000);
+			}else{
+				errHandle(code);
+				closeLoading();
+			}
+		});
+	}
+
+	function checkDmzIp(dmzIp){
+		if (dmzIp.length == 0){
+			return E_INVDMZIPNULL;
+		}
+
+		if (checkIp(dmzIp) != E_NONE){
+			return E_INVDMZIP;
+		}
+
+		return E_NONE;
+	}
+})();
+</script>
+<div class="help hidden">
+	<ul class="help-content">
+		<li class="help-head">
+			<img class="app-icon" src="/luci-static/images/app-icon/dmz.png?_=20170809165512" />
+			<span class="help-title">{%label.dmz%}</span>
+		</li>
+		<li class="summary">{%helpStr.dmz%}</li>
+	</ul>
+</div>
+<div class="head-con">
+	<img class="app-icon" src="/luci-static/images/app-icon/dmz.png?_=20170809165512" />
+	<a href="javascript:history.go(-1);" class="head-btn-l">
+		<i class="head-btn icon icon_back"></i>
+		<span class="head-title">{%label.dmz%}</span>
+	</a>
+</div>
+<div class="set-con below-head">
+	<ul class="set-con set-con-switch">
+		<p class="set-con-desc set-width">
+			<label class="tip-lbl">{%label.dmz%}</label>
+			<span id="Switch" class="switch">
+				<i class="switch-circle icon_select_off"></i>
+			</span>
+		</p>
+	</ul>
+	<div id="Param" class="hidden">
+		<ul class="set-con">
+			<li class="text-con text-width">
+				<label class="desc-lbl desc-width">{%label.dmzIpaddr%}</label>
+				<input id="DmzIp" class="text hover" maxLength="15" value="" />
+			</li>
+		</ul>
+		<div class="err-note hidden">
+			<i class="err-icon icon_remind_line"></i>
+			<p class="note-str"></p>
+		</div>
+	</div>
+	<div class="btn-con">
+		<input id="Save" class="btn btn-width" type="button" value="{%btn.save%}" />
+	</div>
+</div>

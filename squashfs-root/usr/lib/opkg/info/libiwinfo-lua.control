@@ -1,0 +1,9 @@
+Package: libiwinfo-lua
+Version: 51
+Depends: libc, libiwinfo, liblua
+Source: package/network/utils/iwinfo
+Section: lang
+Maintainer: Jo-Philipp Wich <xm@subsignal.org>
+Architecture: ramips_1004kc
+Installed-Size: 6980
+Description:  unknown

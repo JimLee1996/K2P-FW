@@ -1,0 +1,11 @@
+#!/bin/sh /etc/rc.common
+
+START=30
+
+start() {
+    light_manage &
+}
+
+stop() {
+	killall -9 light_manage
+}

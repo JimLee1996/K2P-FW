@@ -1,0 +1,56 @@
+#!/bin/sh
+. /lib/functions.sh
+
+config_change() {
+	local if_type=0
+	local internet_enable
+	local block_user
+	local tx_rate
+	local rx_rate
+	local section_name="$1"
+
+	config_get internet_enable $section_name internet_enable
+	if [ -n "$internet_enable" ]; then
+		config_get tx_rate $section_name uRate
+		config_get rx_rate $section_name dRate
+		if [ $internet_enable -ne 0 -a $tx_rate -eq 0 -a $rx_rate -eq 0 ]; then
+			uci delete $CONFIG.$section_name
+		else
+			if [ $internet_enable -ne 0 ]; then
+				block_user=0
+			else
+				block_user=1
+			fi
+			uci delete $CONFIG.$section_name.internet_enable
+			uci set $CONFIG.$section_name.block_user=$block_user
+			if [ -n "$tx_rate" ]; then
+				uci delete $CONFIG.$section_name.uRate
+				uci set $CONFIG.$section_name.tx_rate=$tx_rate
+			fi
+			if [ -n "$rx_rate" ]; then
+				uci delete $CONFIG.$section_name.dRate
+				uci set $CONFIG.$section_name.rx_rate=$rx_rate
+			fi
+			uci set $CONFIG.$section_name.if_type=$if_type
+			uci delete $CONFIG.$section_name.deviceName
+			uci delete $CONFIG.$section_name.deviceRename
+			uci delete $CONFIG.$section_name.ip
+		fi
+	else
+		config_get block_user $section_name block_user
+		if [ -n "$block_user" ]; then
+			config_get tx_rate $section_name tx_rate
+			config_get rx_rate $section_name rx_rate
+			if [ $block_user -eq 0 -a $tx_rate -eq 0 -a $rx_rate -eq 0 ]; then
+				uci delete $CONFIG.$section_name
+			fi
+		fi
+	fi
+}
+
+CONFIG="device_manage"
+config_load $CONFIG
+config_foreach config_change limit
+uci commit $CONFIG
+
+exit 0

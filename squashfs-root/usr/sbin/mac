@@ -1,0 +1,66 @@
+#!/bin/sh
+
+usage()
+{
+	echo "Usage: $0 <r|w> <lan|wan> [XX XX XX XX XX XX]"
+	echo "This is a script to get or set mac address in factory data."
+	echo "Example:"
+	echo "	$0 r wan"
+	echo "	$0 w lan 00 0c 43 68 55 56"
+	exit 0
+}
+
+factory=/dev/mtd3
+lan_offset=40 #0x28
+wan_offset=34 #0x22
+case `cat /proc/cpuinfo | grep MT76` in
+  *7621*)
+    lan_offset=57344 #0xe000
+    wan_offset=57350 #0xe006
+    ;;
+  *7623*)
+	factory=/dev/mtd4
+    ;;
+esac
+
+#echo $lan_offset
+#echo $wan_offset
+
+if [ "$1" == "r" ]; then
+	if [ "$2" == "wan" ]; then
+		# read wan mac
+		dd if=$factory bs=1 count=6 skip=$wan_offset 2>/dev/null | hexdump -C -n 6 | awk 'NR==1 {print $2,$3,$4,$5,$6,$7}'
+	elif [ "$2" == "lan" ]; then
+		# read lan mac
+		dd if=$factory bs=1 count=6 skip=$lan_offset 2>/dev/null | hexdump -C -n 6 | awk 'NR==1 {print $2,$3,$4,$5,$6,$7}'
+	else
+		usage
+		exit 1
+	fi
+	exit 0
+elif [ "$1" == "w" ]; then
+	if [ "$8" == "" ]; then
+		echo "Mac address must be 6 bytes!"
+		exit 1
+	fi
+
+	if [ "$2" == "wan" ]; then
+		# write wan mac
+		flash w $factory $wan_offset $3 $4 $5 $6 $7 $8 >/dev/null 2>&1 || {
+		echo -n -e "\x$3\x$4\x$5\x$6\x$7\x$8" | dd of=$factory bs=1 count=6 seek=$wan_offset conv=notrunc 2>/dev/null
+		}
+	elif [ "$2" == "lan" ]; then
+		# write lan mac
+		flash w $factory $lan_offset $3 $4 $5 $6 $7 $8 >/dev/null 2>&1 || {
+		echo -n -e "\x$3\x$4\x$5\x$6\x$7\x$8" | dd of=$factory bs=1 count=6 seek=$lan_offset conv=notrunc 2>/dev/null
+		}
+	else
+		usage
+		exit 1
+	fi
+	exit 0
+else
+	usage
+	exit 1
+fi
+

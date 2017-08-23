@@ -1,0 +1,8 @@
+Package: speedtest
+Version: 1
+Depends: libc, libcurl, luaposix, resolveip
+Source: package/phicomm/speedtest
+Section: Phicomm Properties
+Architecture: ramips_1004kc
+Installed-Size: 11063
+Description:  unknown

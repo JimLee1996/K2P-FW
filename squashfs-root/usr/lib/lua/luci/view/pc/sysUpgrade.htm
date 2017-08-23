@@ -1,0 +1,419 @@
+<%
+	local para = {
+		system = {upgrade = {}},
+		device = {info = {}}
+	}
+
+	local result = tpl_get_data(para)
+	local data = result[K_MODULE].system.upgrade
+	local sw_ver = result[K_MODULE].device.info.sw_ver
+-%>
+<script type="text/javascript">
+(function(){
+	function checkUpgrade(){
+		var para = {
+			system:{upgrade_info:{action:"get"}}
+		};
+
+		apiGet(para, function(data){
+			var info = data[K_MODULE]["system"]["upgrade_info"];
+			var status = info.running_status;
+
+			if ("2" == status){	// 升级检查完成
+				$(".inside-circle").hide();
+
+				var code = parseInt(info.status_code, 10);
+				if (1 == info.status_code){	// 有新版本
+					$("#NewSwVer").val(info.new_ver);
+					$("#RealeaseTime").html(info.release_time);
+					var log = unescape(info.release_log.replace(/#x/g,'%u').replace(/\n/g,'<br>'));
+					$("#NewSwLog").html(log);
+					$("#UpgradeCon").show();
+				}else{
+					switch(code){
+					case 0:
+						errInfo = label.swIsNewest;
+						break;
+					case 8801:
+						errInfo= label.serveBusy;
+						break;
+					case 8802:
+						errInfo= label.serverError;
+						break;
+					case 8803:
+						errInfo= label.argsInvalid;
+						break;
+					case 8804:
+						errInfo= label.swIsNewest;
+						break;
+					default:
+						errInfo= label.checkFail;
+						break;
+					}
+
+					if (0 != code && 8804 != code){
+						showNote(errInfo);
+						$("#NewSwVer").val("");
+					}else{
+						$("#NewSwVer").val(label.swIsNewest);
+					}
+
+					$("#UpgradeCon").hide();
+				}
+
+				closeLoading();
+				$("#Check").val(btn.reCheckUpdate);
+			}else{
+				$.setTimeout(checkUpgrade, 3000);
+			}
+		});
+	}
+
+	function saveApi(mod, func, para, callback){
+		var data = {};
+		data[mod] = {};
+		data[mod][func] = para;
+
+		apiSet(data, callback);
+	}
+
+	$("#CurSwVer").val('<%=sw_ver%>');
+
+	$("#Check").click(function(){
+		$("#UpgradeCon").hide();
+		closeNote();
+		showLoading(label.upgradeChecking);
+
+		var para = {
+			system:{upgrade_info:{action:"start"}}
+		};
+
+		apiGet(para, function(){
+			$.setTimeout(checkUpgrade, 3000);
+		});
+	});
+
+	$("#Upgrade").click(function(){
+		showLoading(label.versionChecking);
+
+		var para = {
+			system:{upgrade_info:{action:"upgrade"}}
+		};
+
+		apiGet(para, function(ret){
+			var code = ret[ERR_CODE];
+			if (E_NONE == code){
+				$.setTimeout(upgradeStatus, 1000);
+			}
+		});
+	});
+
+	var upgradeStatusHd = null;
+	function upgradeStatus(){
+		var para = {
+			system:{upgrade_info:{action:"upgrade_status"}}
+		};
+
+		apiGet(para, function(ret){
+			var info = ret[K_MODULE]["system"]["upgrade_info"];
+			var status = info.running_status;
+			var code = parseInt(info.status_code, 10);
+
+			if (4 == status){
+				if (0 == code){
+					clearTimeout(upgradeStatusHd);
+					showProgressBar(label.upgrading, label.upgradingTips, ROUTER.time.onlineUpgrade, function(){
+						window.location.reload();
+					});
+
+					$.setTimeout(function(){
+						// 检测LAN是否可以连接DUT
+						lanDetecting(function(){
+							window.location.reload();
+						});
+					}, ROUTER.time.detectDelay);
+				}
+			}else if(0 == status){
+				clearTimeout(upgradeStatusHd);
+				statusHandle(status, code);
+			}else{
+				switch(code){
+				case 0:
+					showStatus(status);
+					upgradeStatusHd = $.setTimeout(upgradeStatus, 1000);
+					break;
+				default:
+					clearTimeout(upgradeStatusHd);
+					statusHandle(status, code);
+					break;
+				}
+			}
+		});
+	}
+
+	function showStatus(status){
+		if(1 == status){
+			showLoading(label.versionChecking);
+		}else if(2 == status){
+			showLoading(label.downloadingTip);
+		}else if(3 == status){
+			showLoading(label.upgradeChecking);
+		}
+	}
+
+	function statusHandle(status, code){
+		var noteStr = "";
+
+		if(1 == status){
+			switch(code){
+			case 1://当前已经是最新版本
+				noteStr = errStr.versionIsNewest;
+				break;
+			case 2://网络异常导致获取新版本失败
+				noteStr = errStr.getNewVersionErr;
+				break;
+			default:
+				noteStr = errStr.unknownErr + status + code;
+				break;
+			}
+		}else if(2 == status){
+			switch(code){
+			case 1://有一个下载例程在进行
+				noteStr = errStr.downloadUnderway;
+				break;
+			case 2://下载失败
+				noteStr = errStr.downloadFail;
+				break;
+			default:
+				noteStr = errStr.unknownErr + status + code;
+				break;
+			}
+		}else if(3 == status){
+			switch(code){
+			case 1://不合法升级文件
+				noteStr = errStr.upgradeFileErr;
+				break;
+			case 2://不匹配硬件设备
+				noteStr = errStr.fwNoMatchHw;
+				break;
+			case 3://不匹配产品型号
+				noteStr = errStr.fwNoMatchPrdct;
+				break;
+			case 4://当前版本不满足最低版本要求
+				noteStr = errStr.fwVerTooLow;
+				break;
+			case 5://当前固件版本不支持版本降级
+				noteStr = errStr.noAllowReduceVer;
+				break;
+			case 6://系统错误
+				noteStr = errStr.systemErr;
+				break;
+			case 7://有其他升级程序正在运行
+				noteStr = errStr.upgradeUnderway;
+				break;
+			case 8://校验信息获取失败
+				noteStr = errStr.checkInfoFail;
+				break;
+			default:
+				noteStr = errStr.unknownErr + status + code;
+				break;
+			}
+		}else{
+			noteStr = errStr.unknownErr + status + code;
+		}
+
+		showAlert(noteStr);
+	}
+
+	var mode = parseInt('<%=data.mode%>');
+	var radioIdx = mode;
+
+	initRadio("UpgradeType", radioIdx, function(idx){
+		if (0 == idx){
+			$("#OnlineUpgrade").show();
+			$("#TimingUpgrade").hide();
+
+			saveApi("system", "upgrade", {mode:0});
+		}else{
+			$("#OnlineUpgrade").hide();
+			$("#TimingUpgrade").show();
+		}
+
+		closeNote();
+	});
+
+	$("#Hour").val('<%=data.start_hour%>');
+	$("#Minute").val('<%=data.start_minute%>');
+
+	$("#Save").click(function(){
+		var hour = $("#Hour").val();
+		var minute = $("#Minute").val();
+		var data = {};
+
+		if (("" == hour) || !checkNumRange(hour, 23, 0)){
+			showNote(errStr.upgradeHourInv);
+			return;
+		}
+
+		if (("" == minute) || !checkNumRange(minute, 59, 0)){
+			showNote(errStr.upgradeMinuteInv);
+			return;
+		}
+
+		data.mode = "1";
+		data.start_hour = hour;
+		data.start_minute = minute;
+
+        showLoading(label.saving);
+		saveApi("system", "upgrade", data, function(ret){
+			$.setTimeout(function(){
+				closeLoading();
+			}, 2000);
+        });
+    });
+})();
+</script>
+<style type="text/css">
+	#Check{
+		background-color:#1499E6
+	}
+	#NewSwVer{
+		color:#F00;
+		font-weight:bold;
+	}
+	#UpgradeCon{
+		margin-top:30px;
+	}
+	p.upgrade-info{
+		color:#767D82;
+		font-size:14px;
+		width:300px;
+		margin:5px auto;
+	}
+	#NewSwLog{
+		margin-top:20px;
+	}
+	li.text-con-b{
+		border-width:0;
+		text-align:left;
+		white-space:nowrap;
+	}
+	li.text-con-b label.desc-lbl{
+		border-right-width:0;
+		text-align:left;
+		margin-right:10px;
+	}
+	input.time-input{
+		border:1px solid #DDD;
+		border-radius:4px;
+		width:50px;
+		color:#4F5356;
+		padding:0 14px;
+		vertical-align:middle;
+		height:24px;
+		font-size:15px;
+		text-align:center;
+	}
+	input.time-input:focus{
+		border-color:#FFBE62;
+	}
+	span.unit{
+		font-size:14px;
+		color:#4F5356;
+		vertical-align:middle;
+		margin:0 8px;
+	}
+	/*适配1080p*/
+	@media screen and (min-device-width:1920px){
+		input.time-input {
+			width: 75px;
+			font-size: 17px;
+		}
+		li.set-con-radio {
+			width: 400px;
+		}
+		label.radio-title {
+			width: 150px;
+			font-size: 18px;
+		}
+	}
+</style>
+<div class="help hidden">
+	<ul class="help-content">
+		<li class="help-head">
+			<img class="app-icon" src="/luci-static/images/app-icon/upgrade.png?_=20170809165512" />
+			<span class="help-title">{%label.autoUpgrade%}</span>
+		</li>
+		<li class="summary">{%helpStr.autoUpgrade%}</li>
+		<li class="summary">{%helpStr.autoUpgradeTip%}</li>
+	</ul>
+</div>
+<div class="head-con">
+	<img class="app-icon" src="/luci-static/images/app-icon/upgrade.png?_=20170809165512" />
+	<a href="javascript:history.go(-1);" class="head-btn-l">
+		<i class="head-btn icon icon_back"></i>
+		<span class="head-title">{%label.autoUpgrade%}</span>
+	</a>
+</div>
+<div class="set-con below-head">
+	<ul class="set-con set-con-radio">
+		<li class="set-con-radio">
+			<label class="radio-title">{%label.upgradeType%}</label>
+			<span id="UpgradeType" class="radio-group">
+				<span class="radio uncheck">
+					<i class="uncheck icon_radiobox_off"></i><i class="checked icon_radiobox_on"></i>
+					<label>{%label.onlineUpgrade%}</label>
+				</span>
+				<span class="radio radio-r uncheck">
+					<i class="uncheck icon_radiobox_off"></i><i class="checked icon_radiobox_on"></i>
+					<label>{%label.timingUpgrade%}</label>
+				</span>
+			</span>
+		</li>
+	</ul>
+	<div id="OnlineUpgrade" class="hidden">
+		<div class="btn-con">
+			<input id="Check" class="btn" type="button" value="{%btn.detectVer%}" />
+		</div>
+		<ul class="set-con">
+			<li class="text-con">
+				<label class="desc-lbl">{%label.curVer%}</label>
+				<input id="CurSwVer" class="text" value="" readonly />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<li class="text-con">
+				<label class="desc-lbl">{%label.newVer%}</label>
+				<input id="NewSwVer" class="text" value="" readonly />
+			</li>
+		</ul>
+		<div class="err-note hidden">
+			<i class="err-icon icon_remind_line"></i>
+			<p class="note-str"></p>
+		</div>
+		<div id="UpgradeCon" class="hidden">
+			<p class="upgrade-info"><span>{%label.realeaseTime%}{%label.colon%}</span><span id="RealeaseTime"></span></p>
+			<p class="upgrade-info"><span>{%label.realeaseLog%}{%label.colon%}</span></p>
+			<p class="upgrade-info" id="NewSwLog"></p>
+			<div class="btn-con">
+				<input id="Upgrade" class="btn" type="button" value="{%btn.autoUpgrade%}" />
+			</div>
+		</div>
+	</div>
+	<div id="TimingUpgrade" class="hidden">
+		<ul class="set-con">
+			<li class="text-con text-con-b">
+				<label class="desc-lbl">{%label.upgradeTime%}</label>
+				<input id="Hour" class="hover time-input" placeholder="{%label.hourTip%}" maxLength="2" /><span class="unit">{%label.colon%}</span>
+				<input id="Minute" class="hover time-input" placeholder="{%label.minuteTip%}" maxLength="2" />
+			</li>
+		</ul>
+		<div class="err-note hidden">
+			<i class="err-icon icon_remind_line"></i>
+			<p class="note-str"></p>
+		</div>
+		<div class="btn-con">
+			<input id="Save" class="btn" type="button" value="{%btn.save%}" />
+		</div>
+	</div>
+</div>

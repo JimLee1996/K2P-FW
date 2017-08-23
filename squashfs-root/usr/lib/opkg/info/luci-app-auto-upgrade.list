@@ -1,0 +1,5 @@
+/usr/lib/lua/luci/view/h5/sysUpgrade.htm
+/usr/lib/lua/luci/data/auto_upgrade.lua
+/usr/lib/lua/luci/controller/admin/auto_upgrade.lua
+/www/luci-static/images/app-icon/upgrade.png
+/usr/lib/lua/luci/view/pc/sysUpgrade.htm

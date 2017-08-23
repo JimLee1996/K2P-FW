@@ -1,0 +1,10 @@
+Package: kmod-nls-cp437
+Version: 3.10.14-1
+Depends: kernel (=3.10.14-1-b111ad83351afe639183d8564c3857ca), kmod-nls-base
+Source: package/kernel/linux
+License: GPLv2
+Section: kernel
+Status: unknown hold not-installed
+Architecture: ramips_1004kc
+Installed-Size: 2117
+Description:  unknown

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+uci -q batch <<-EOT
+	delete firewall.capp
+	set firewall.capp=include
+	set firewall.capp.type=script
+	set firewall.capp.path=/usr/share/capp/firewall.include
+	set firewall.capp.family=any
+	set firewall.capp.reload=1
+	commit firewall
+EOT
+
+exit 0

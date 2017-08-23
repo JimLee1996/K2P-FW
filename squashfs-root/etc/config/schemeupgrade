@@ -1,0 +1,8 @@
+config schemeupgrade 'config'
+	option up_scheme '0'
+	option firmurl ''
+	option sw_ver ''
+	option sw_desc ''
+	option pubtime ''
+	option repeattime '7200'
+	option filesize ''

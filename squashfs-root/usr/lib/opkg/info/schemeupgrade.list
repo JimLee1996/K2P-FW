@@ -1,0 +1,8 @@
+/etc/config/schemeupgrade
+/www/luci-static/bootstrap/js/up_utf8.js
+/usr/sbin/schemeupgrade
+/www/luci-static/bootstrap/js/up.js
+/etc/init.d/schemeupgrade
+/www/luci-static/bootstrap/images/close.png
+/www/luci-static/bootstrap/images/bg.png
+/www/luci-static/bootstrap/js/up_gbk.js

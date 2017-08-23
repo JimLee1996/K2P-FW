@@ -1,0 +1,9 @@
+Package: libiconv-full
+Version: 1.15-1
+Depends: libc
+Source: package/libs/libiconv-full
+Section: libs
+Maintainer: Jo-Philipp Wich <jow@openwrt.org>
+Architecture: ramips_1004kc
+Installed-Size: 671077
+Description:  unknown

@@ -1,0 +1,4 @@
+#!/bin/sh 
+. /lib/functions/nvram2uci.sh
+
+nvram2uci LedOnOff light_manage.pagelight.ignore 

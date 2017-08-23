@@ -1,0 +1,25 @@
+#!/bin/sh
+
+inform_upnpctl() {
+	wan_name=$(uci get network.wan.ifname)
+	wan_proto=$(uci get network.wan.proto)
+	if [ ${wan_proto} != "pppoe" ]; then
+		wan_ip=$(ifconfig $wan_name | grep "inet addr" | awk '{print $2}' | awk -F ":" '{print $2}')
+	else
+		wan_ip=$(ifconfig pppoe-wan | grep "inet addr" | awk '{print $2}' | awk -F ":" '{print $2}')
+	fi
+
+	if [[ -n $wan_ip ]]; then
+		uci delete tnat.appmgt.retNat
+		uci commit tnat
+		ubus call http wan_ip_change
+	fi
+}
+
+
+
+if [ "$ACTION" = "ifup" -a "$INTERFACE" = "wan" ]; then
+	inform_upnpctl
+fi
+
+

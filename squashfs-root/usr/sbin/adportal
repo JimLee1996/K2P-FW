@@ -1,0 +1,29 @@
+#!/bin/sh
+
+local enable=$1
+[ "$enable" != "1" ] && enable="0"
+
+if [ "$enable" = "1" ]; then
+	[ -z "`iptables -t nat -S PREROUTING | grep '\-j REDIRECT \-\-to\-ports 8082'`" ] && {
+		local lanip=$(uci -P /var/state get network.lan.ipaddr)
+		[ -z "$lanip" ] && return
+
+		local mac_online=$(cat /proc/net/arp | grep 'br-lan$' | awk '{print $4}' | sort -u)	
+		ipset create ad_white hash:mac >/dev/null 2>&1
+		for mac in $mac_online; do
+			ipset add ad_white $mac >/dev/null 2>&1
+		done
+		
+		iptables -t nat -A PREROUTING -i br-lan -p tcp --dport 80 ! -d "$lanip" -m set ! --match-set ad_white src -j REDIRECT --to-ports 8082
+		local count=$(iptables -t nat -S PREROUTING | grep '\-j REDIRECT \-\-to\-ports 8082' | grep -c "")
+		[ $count -gt 1 ] && {
+			iptables -t nat -D PREROUTING -i br-lan -p tcp --dport 80 ! -d "$lanip" -m set ! --match-set ad_white src -j REDIRECT --to-ports 8082
+		}
+	}
+else
+	local file_drules="/tmp/adportal.sh"
+	iptables -t nat -S PREROUTING | grep '\-j REDIRECT \-\-to\-ports 8082' | sed 's/^-A/iptables -t nat -D/' > $file_drules
+	sh $file_drules
+	rm -rf $file_drules
+	ipset destroy ad_white >/dev/null 2>&1
+fi

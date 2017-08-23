@@ -1,0 +1,4 @@
+#!/bin/sh
+
+source /lib/sop_functions.sh
+log_dump

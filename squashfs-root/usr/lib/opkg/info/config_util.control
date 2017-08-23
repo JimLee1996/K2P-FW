@@ -1,0 +1,8 @@
+Package: config_util
+Version: 1
+Depends: libc, phicomm_libs
+Source: package/phicomm/config_util
+Section: Phicomm Properties
+Architecture: ramips_1004kc
+Installed-Size: 2081
+Description:  unknown

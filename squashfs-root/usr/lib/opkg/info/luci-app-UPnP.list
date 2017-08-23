@@ -1,0 +1,9 @@
+/etc/nvram2uci/UPnP
+/usr/lib/lua/luci/controller/admin/upnp.lua
+/etc/uci-defaults/luci-upnp
+/www/luci-static/images/app-icon/upnp.png
+/etc/init.d/upnp
+/etc/hotplug.d/iface/72-UPnP
+/etc/config/UPnP
+/usr/lib/lua/luci/data/upnp.lua
+/usr/lib/lua/luci/view/pc/upnp.htm

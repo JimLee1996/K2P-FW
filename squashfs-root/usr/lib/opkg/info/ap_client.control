@@ -1,0 +1,8 @@
+Package: ap_client
+Version: 1.0-1
+Depends: libc, libuci, phicomm_libs, libubox, libubus, jshn
+Source: package/phicomm/ap_client
+Section: Phicomm Properties
+Architecture: ramips_1004kc
+Installed-Size: 18081
+Description:  unknown

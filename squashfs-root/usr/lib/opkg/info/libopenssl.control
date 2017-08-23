@@ -1,0 +1,10 @@
+Package: libopenssl
+Version: 1.0.2-2
+Depends: libc, zlib
+Source: package/libs/openssl
+License: SSLEAY OPENSSL
+LicenseFiles: LICENSE
+Section: libs
+Architecture: ramips_1004kc
+Installed-Size: 713376
+Description:  unknown

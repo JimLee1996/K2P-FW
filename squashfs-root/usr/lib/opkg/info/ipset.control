@@ -1,0 +1,9 @@
+Package: ipset
+Version: 6.29-1
+Depends: libc, kmod-ipt-ipset, libmnl
+Source: package/network/utils/ipset
+Section: net
+Maintainer: Jo-Philipp Wich <jow@openwrt.org>
+Architecture: ramips_1004kc
+Installed-Size: 71471
+Description:  unknown

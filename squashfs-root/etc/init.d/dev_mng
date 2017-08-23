@@ -1,0 +1,16 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2016 www.phicomm.com
+
+START=85
+SERVICE_DAEMONIZE=1
+
+start() {
+	touch /var/state/base_device
+    service_start /usr/bin/dev_mng
+}
+
+stop() {
+    service_stop /usr/bin/dev_mng
+    service_stop /usr/bin/ip_eventd
+	rm -rf /var/state/base_device
+}

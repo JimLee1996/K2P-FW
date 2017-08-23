@@ -1,0 +1,764 @@
+#!/usr/bin/lua
+
+local px     = require "posix"
+local fs     = require "nixio.fs"
+local uci    = require "luci.model.uci"
+
+local g_ucicursor          = uci.cursor()
+local g_mins_nextspeedtest = 0
+local g_times_speedtest    = 8
+local g_debug_file_id      = nil
+local g_debug              = false
+local pid_file             = "/var/run/speedtestd.pid"
+
+
+function time_to_mins(stime)
+	local _, _, hour = string.find(stime, '([0-9]+):')
+	local _, _, min  = string.find(stime, ':([0-9]+)')
+
+	return (60 * tonumber(hour) + tonumber(min))
+end
+
+function mins_to_time(mins)
+	local hour = 0
+	local min = 0
+	
+	min  = mins % 60
+	hour = (mins - min) / 60
+
+	return string.format("%2d:%2d", hour, min)
+end
+
+function log_to_file(fileid, msg)
+	local file_size = fileid:seek("end")
+
+	if file_size > 1024*1024 then
+		return
+	end
+	fileid:write(os.date("%x %X").." : "..msg.."\n")
+end
+
+--[[1 Alert, 3 Error 7 Debug ]]--
+px.openlog("speedtest", "np", LOG_USER)
+function logger(loglevel, msg)
+	if loglevel < 7 then
+		px.syslog(loglevel, msg)
+	end
+	if g_debug and g_debug_file_id then
+		log_to_file(g_debug_file_id, msg)
+	end
+end
+
+function execl(command)
+	local pp = io.popen(command)
+	local line = ""
+	local data = {}
+
+	while true do
+		line = pp:read()
+		if (line == nil) then break end
+		data[#data+1] = line
+	end
+	pp:close()
+
+	return data
+end
+
+function kill_allson()
+	local root_pid = px.getpid("pid")
+	local res = execl("pstree -p " .. root_pid)
+
+	for k,v in ipairs(res) do
+		local j = 0
+		while true do
+			_,j,pid  = string.find(v, '%(([0-9]+)%)', j+1)
+			if pid then
+				if tonumber(pid) ~= root_pid then
+					px.kill(pid, px.SIGTERM)
+				end
+			else
+				break
+			end
+		end
+	end
+	while px.wait(0) do end
+end
+
+function system_exit()
+	logger(3, '======== Process Exit. =====')
+
+	if g_debug_file_id then
+		g_debug_file_id:flush()
+		g_debug_file_id:close()
+	end
+	
+	kill_allson()
+	os.execute("rm -rf " .. pid_file)
+	os.exit(0)
+end
+
+function get_uptime()
+	local pp = io.open('/proc/uptime')
+	local n = pp:read('*n')
+	return math.ceil(n)
+end
+
+function mrandom(min, max, num)
+	local t = {}
+	local ret = {}
+	local i = min
+	local index
+	
+	if min > max or min > num then
+		logger(10, "mrandom, min < max or min < num")
+		return {}
+	end
+	
+	while i <= max do
+		table.insert(t, i)
+		i = i + 1
+	end
+	
+	i = num
+	math.randomseed(os.time())
+	
+	while i > 0 and table.getn(t) > 0 do
+		index = math.random(table.getn(t))
+		table.insert(ret,t[index])
+		if index == table.getn(t) then
+			table.remove(t)
+		else
+			local top = table.remove(t)
+			t[index] = top
+		end
+		i = i - 1
+	end
+	return ret
+end
+
+function if_data_collect(ifname)
+	local line
+	local face, r_bytes, r_packets, r_errs, r_drop, r_fifo, r_frame, r_compressed, r_multicast
+	local t_bytes, t_packets, t_errs, t_drop, t_fifo, t_colls, t_carrier, t_compressed
+	
+	if fs.access("/proc/net/dev") then
+		for line in io.lines("/proc/net/dev") do
+			_, _, face, r_bytes, r_packets, r_errs, r_drop, r_fifo, r_frame, r_compressed, r_multicast,
+			t_bytes, t_packets, t_errs, t_drop, t_fifo, t_colls, t_carrier, t_compressed = string.find(line,
+			'%s*(%S+):%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s*')
+			if (face == ifname) then
+				return {
+					r_bytes = tonumber(r_bytes),
+					r_packets = tonumber(r_packets),
+					t_bytes = tonumber(t_bytes),
+					t_packets = tonumber(t_packets),
+					uptime = get_uptime()
+				}
+			end
+		end
+	end
+end
+
+function wan_data_collect(times)
+	local wan_ifname = execl("uci -P /var/state get network.wan.ifname")[1]
+	local collect_datas = {}
+	
+	while times > 0 do
+		times = times -1
+		local data = if_data_collect(wan_ifname)
+		collect_datas[#collect_datas + 1] = data
+		px.sleep(1)
+	end
+	
+	logger(10, "collect_datas num:".. #collect_datas .. " wan_ifname:".. wan_ifname)
+	return collect_datas
+end
+
+function tcp_retrans_num()
+	local line
+	local num = 0
+	
+	if not fs.access("/proc/net/snmp") then
+		return 0
+	end
+	for line in io.lines("/proc/net/snmp") do
+		if line:find("^Tcp") then
+			if num == 0 then
+				num = 1
+			else
+				local _, _, RtoAlgorithm, RtoMin, RtoMax, MaxConn, ActiveOpens, PassiveOpens, AttemptFails, EstabResets, CurrEstab,
+					InSegs, OutSegs, RetransSegs, InErrs, OutRsts, InCsumErrors = line:find(
+				'^Tcp:%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s*')
+				return tonumber(RetransSegs) or 0
+			end
+		end
+	end
+	return 0
+end
+
+function get_url_resource()
+	local pp = io.open("/usr/share/speedtest.xml")
+	local line
+	local downloadurls1 = {}
+	local downloadurls2 = {}
+	local uploadurls = {}
+	local class = "1"
+	
+	if not pp then
+		logger(10, "have no the /usr/share/speedtest.xml")
+		return {}, {}, {}
+	end
+	
+	line = pp:read("*line")
+	while line do
+		if line:find("%s*<item") then
+			local _, _, downloadurl = line:find('^%s*<item url="(.*)"/>')
+			if downloadurl then
+				if class == "1" then
+					table.insert(downloadurls1, downloadurl)
+				else
+					table.insert(downloadurls2, downloadurl)
+				end
+			else
+				local _, _, uploadurl = line:find('^%s*<item uploadurl="(.*)"/>')
+				if uploadurl then
+					table.insert(uploadurls, uploadurl)
+				end
+			end
+		else
+			local _, _, classp = line:find('^%s*<class type=\"(.*)\">')
+			if classp then
+				class = classp
+			end
+		end
+		line = pp:read("*line")
+	end
+	pp:close()
+	return downloadurls1, downloadurls2, uploadurls
+end
+
+function url_resolveip(urls, filename)
+	local fd = io.open(filename, "a")
+	local host2ip = {}
+	local num = 0
+	
+	for i = 1 , #urls do
+		local _, _, hostname, path = string.find(urls[i], "^http://(.-)/(.*)")
+		if not hostname then
+			_, _, hostname = string.find(urls[i], "^http://(.*)")
+		end
+		if hostname then
+			local ip = host2ip[hostname]
+			if not ip then
+				ip = execl("resolveip -t 2 " .. hostname)[1]
+				if ip then
+					host2ip[hostname] = ip
+				end
+			end
+			
+			if ip then
+				fd:write(string.format("<item url=\"%s\"/>", urls[i]))
+				fd:write("\n")
+				num = num + 1
+			end
+		end
+	end
+	fd:close()
+	return num
+end
+
+--结果计算方法分三步：1、以n个相隔采样点算出n-1个速度值；2、除去最小值和最大值，计算速度平均值；
+--3、检查速度值的合法性，排除断网等异常的发生
+
+-- 返回值的单位为KB
+function generate_downrate_data(dotdata)
+	local j = 1
+	local data = {}
+	local diff_time
+	
+	if #dotdata < 2 then
+		logger(3, "down dotdata error, num:".. #dotdata)
+		return {}
+	end
+	
+	while j+1 <= #dotdata do
+		diff_time =  dotdata[j+1].uptime - dotdata[j].uptime
+		if diff_time <= 0 then
+			logger(3, "generate downrate error, diff_time <= 0")
+			return {}
+		end
+		data[#data + 1] = (dotdata[j+1].r_bytes - dotdata[j].r_bytes) / diff_time / 1024
+		j = j + 1
+		logger(10, data[#data])
+	end
+	
+	for j = 1, #data do
+		if data[j] <= 0 then
+			return {}
+		end
+	end
+	return data
+end
+
+function generate_uprate_data(dotdata)
+	local j = 1
+	local data = {}
+	local diff_time
+	
+	if #dotdata < 2 then
+		logger(3, "up dotdata error, num:".. #dotdata)
+		return {}
+	end
+	
+	while j+1 <= #dotdata do
+		diff_time =  dotdata[j+1].uptime - dotdata[j].uptime
+		if diff_time <= 0 then
+			logger(3, "generate uprate error, diff_time <= 0")
+			return {}
+		end
+		data[#data + 1] = (dotdata[j+1].t_bytes - dotdata[j].t_bytes) / diff_time / 1024
+		j = j + 1
+		logger(10, data[#data])
+	end
+	
+	for j = 1, #data do
+		if data[j] <= 0 then
+			return {}
+		end
+	end
+	return data
+end
+
+function do_avg_remove_max_min(tdata)
+	local sum = 0
+	
+	table.sort(tdata)
+	table.remove(tdata, #tdata)
+	table.remove(tdata,1)
+
+	for _, value in pairs(tdata) do
+		sum = sum + value
+	end
+
+	return sum / #tdata
+end
+
+--[=[通过采样点获取的每一段时间内的速率应该是比较平缓的，如果出现比较大的波动，有可能是断网或者其他异常造成的,
+     判定这种结果不合法。目前暂定(可调整):每个速率和平均值比较，大于1/3小于3倍合法，否则非法
+--]=]
+function check_valid_ratedata(ratedatas, avg, shouldnum)
+	local uplimit = 3
+	local downlimit = 0.33
+	local factor
+	
+	if shouldnum ~= #ratedatas then
+		logger(10, string.format("shouldnum=%d, #ratedatas=%d.", shouldnum, #ratedatas))
+		return false
+	end
+	
+	for _, rate in ipairs(ratedatas) do
+		factor = rate / avg
+		if factor >= uplimit or factor <= downlimit then
+			logger(10, "factor=" .. factor)
+			return false
+		end
+	end
+	return true
+end
+
+function do_speed_test_download(urls)
+	local urlfile = "/tmp/downurls.xml"
+	local num_reqs = 2560
+	local max_url = 16
+	local times_collect = 10
+	local pid
+	local urls_use = {}
+
+	local indexs = mrandom(1, #urls, max_url)
+	for i = 1, #indexs do
+		urls_use[#urls_use + 1] = urls[indexs[i]]
+	end
+	
+	os.execute("cat /dev/null > " .. urlfile)
+	max_url = url_resolveip(urls_use, urlfile)
+	if max_url <= 0 then
+		logger(10, "no download url to use!")
+		os.remove(urlfile)
+		return 0
+	end
+	
+	local pid = px.fork()
+	if pid == 0 then
+		px.signal(px.SIGTERM,
+			function ()
+				logger(10,'signal TERM to stop the download speed test.')
+				os.exit(0)
+			end)
+		local cmd = (string.format("nice -n -20 speedtest get %s %d %d > /dev/null 2>&1", urlfile, max_url, num_reqs))
+		os.execute(cmd)
+		os.exit(0)
+	elseif pid < 0 then
+		kill_allson()
+		return 0
+	end
+	
+	px.sleep(1)
+	local dot_datas = wan_data_collect(times_collect)
+	kill_allson()
+	os.remove(urlfile)
+	px.sleep(1)
+	
+	local downrates = generate_downrate_data(dot_datas)
+	local avg = do_avg_remove_max_min(downrates)
+	if not check_valid_ratedata(downrates, avg, times_collect-3) then
+		return 0
+	end
+	return (avg * 8) --Kb
+end
+
+function do_speed_test_upload(urls)
+	local postfile = "/tmp/postfile.dat"
+	local urlfile = "/tmp/upurls.xml"
+	local num_reqs = 640
+	local max_url = 10
+	local times_collect = 10
+	local len_packet = 1500
+	local urls_use = {}
+
+	local indexs = mrandom(1, #urls, max_url)
+	for i = 1, #indexs do
+		urls_use[#urls_use + 1] = urls[indexs[i]]
+	end
+	
+	os.execute(string.format("dd if=/dev/zero of=%s bs=1k count=1024 >/dev/null 2>&1", postfile))
+	if not posix.stat(postfile) then
+		logger(10, "Create the postfile error!")
+		return 0
+	end
+	
+	os.execute("cat /dev/null > " .. urlfile)
+	max_url = url_resolveip(urls_use, urlfile)
+	if max_url <= 0 then
+		logger(10, "no upload url to use!")
+		os.remove(urlfile)
+		return 0
+	end
+	
+	local pid = px.fork()
+	if pid == 0 then
+		px.signal(px.SIGTERM,
+			function ()
+				logger(10,'signal TERM to stop the upload speed test.')
+				os.exit(0)
+			end)
+		local cmd = (string.format("nice -n -20 speedtest post %s %s %d %d > /dev/null 2>&1", postfile, urlfile, max_url, num_reqs))
+		os.execute(cmd)
+		os.exit(0)
+	elseif pid < 0 then
+		kill_allson()
+		return 0
+	end
+	
+	px.sleep(1)
+	local retrans1 = tcp_retrans_num()
+	local time1 = get_uptime()
+	local dot_datas = wan_data_collect(times_collect)
+	local retrans2 = tcp_retrans_num()
+	local time2 = get_uptime()
+	kill_allson()
+	os.remove(postfile)
+	os.remove(urlfile)
+	px.sleep(1)
+	
+	local uprates = generate_uprate_data(dot_datas)
+	local avg = do_avg_remove_max_min(uprates)
+	if not check_valid_ratedata(uprates, avg, times_collect-3) then
+		return 0
+	end
+	
+	local diff_retrans = retrans2 - retrans1
+	local diff_time = time2 - time1
+	if diff_retrans < 0 or diff_time <= 0 then -- 溢出
+		logger(3, "diff_retrans=" .. diff_retrans .. ", diff_time=" .. diff_time)
+		return 0
+	end
+	avg = avg - len_packet * diff_retrans / 1024 / diff_time
+	return (avg * 8) --Kb
+end
+
+function is_wan_busy()
+	local busy_limit_uprate = 2 --kB
+	local busy_limit_downrate = 5 -- kB
+	local times = 10
+	
+	local dot_datas = wan_data_collect(times)
+	local downrates = generate_downrate_data(dot_datas)
+	local downavg = do_avg_remove_max_min(downrates)
+	local uprates = generate_uprate_data(dot_datas)
+	local upavg = do_avg_remove_max_min(uprates)
+
+	if downavg > busy_limit_uprate and upavg > busy_limit_downrate then
+		return true
+	end
+	return false
+end
+
+function is_wireless_extend()
+	local wan_ifname = execl("uci -P /var/state get network.wan.ifname")[1]
+	
+	if wan_ifname and string.find(wan_ifname, '^ap') then
+		return true
+	end
+	return false
+end
+
+function is_time_to_speedtest()
+	local date = os.date("%X")
+	local _,_,hour = string.find(date, '^([0-9]+):')
+	local _,_,min  = string.find(date, '^[0-9]+:([0-9]+):')
+	local now_mins = 60 * tonumber(hour) + tonumber(min)
+
+	logger(10, "is_time_to_speedtest(), now_mins: " .. now_mins .. " next: " .. g_mins_nextspeedtest)
+	
+	if now_mins >= g_mins_nextspeedtest - 1 and now_mins <= g_mins_nextspeedtest + 1 then
+		return true
+	end
+	return false
+end
+
+-- generate a ramdom time between 00:00-24:00
+function get_mins_ramdom()
+	local start_mins = time_to_mins("00:00")
+	local end_mins = time_to_mins("24:00")
+	
+	math.randomseed(os.time())
+	return math.random(start_mins, end_mins)
+end
+
+function is_internet_connected()
+	--当前判断dnsmasq是否配置好
+	local ucicursor = uci.cursor()
+	local welcome = ucicursor:get("dhcp", "welcome")
+	
+	if welcome then
+		return false
+	end
+	return true
+end
+
+--[=[
+以带宽256Kb的为例（目前基本上不可能比这个更小的了），下行为acceptable_downband = 256，上行假设不对称，
+假设为acceptable_upband = acceptable_downband / 4 = 64
+--]=]
+function is_band_result_acceptable(downband, upband)
+	local acceptable_downband = 256
+	local acceptable_upband = 64
+	
+	if downband < acceptable_downband or upband < acceptable_upband then
+		logger(10, "band result unacceptable!")
+		return false
+	end
+	return true
+end
+
+--[=[
+	目前家庭用户的上行带宽基本上是下行的大于上行的，如果出现上行的大于下行的，需要进行如下的判断：
+	1、判断本次不合理是否是第一次；是则继续判断是否达到测速次数上限，达到将采纳本次的结果，没达到则保存本次所测的结果，
+		然后设置当前的测速结果为失败，等待下一次的测速。
+	2、不是第一次则和上一次保存的结果进行对比，保存其中相对合理的值。相对合理的标准目前设定为上行和下行更接近。
+--]=]
+function check_band_result_fine(downband, upband)
+	if downband >= upband then
+		return true, downband, upband
+	end
+	
+	local ucicursor = uci.cursor()
+	local lastdownband = ucicursor:get("speedtest", "do", "lastdownband") or "0"
+	local lastupband = ucicursor:get("speedtest", "do", "lastupband") or "0"
+	
+	lastdownband = tonumber(lastdownband) or 0
+	lastupband = tonumber(lastupband) or 0
+	
+	if lastdownband > 0 and lastupband > 0 then
+		if lastupband/lastdownband >= upband/downband then
+			return true, downband, upband
+		else
+			logger(10, "use last band result! last downband:" .. lastdownband .. " upband:".. lastupband)
+			return true, lastdownband, lastupband
+		end
+	else
+		local times = ucicursor:get("speedtest", "do", "times") or "0"
+		
+		times = tonumber(times) or 0
+		if times + 1 >= g_times_speedtest then
+			return true, downband, upband
+		else
+			ucicursor:set("speedtest", "do", "lastdownband", downband)
+			ucicursor:set("speedtest", "do", "lastupband", upband)
+			ucicursor:commit("speedtest")
+			return false
+		end
+	end
+end
+
+-- 测速成功：0，不满足测速条件：1，测速失败：2
+function do_speed_test()
+	if not is_internet_connected() then
+		logger(10, "Internet is not connected, do nothing!")
+		return 1
+	end
+
+	if is_wan_busy() then
+		logger(10, "Wan is busy, do nothing! ")
+		return 1
+	end
+	
+	local downloadurls, downloadurls2, uploadurls = get_url_resource()
+	local downband = do_speed_test_download(downloadurls)
+	px.sleep(5)
+	local upband = do_speed_test_upload(uploadurls)
+	
+	logger(10, "downband:" .. downband .. " upband:".. upband)
+	
+	if not is_band_result_acceptable(downband, upband) then
+		return 2
+	end
+	
+	local rc, downband, upband = check_band_result_fine(downband, upband)
+	if not rc then
+		return 2
+	end
+	
+	g_ucicursor:set("speedtest", "result", "downband", string.format("%.2f", downband))
+	g_ucicursor:set("speedtest", "result", "upband", string.format("%.2f", upband))
+	g_ucicursor:commit("speedtest")
+	return 0
+end
+
+function do_speed_test_now()
+	if not is_internet_connected() then
+		logger(10, "Internet is not connected, do nothing!")
+		system_exit()
+	end
+	
+	local downloadurls, downloadurls2, uploadurls = get_url_resource()
+	local downband = do_speed_test_download(downloadurls)
+	px.sleep(5)
+	local upband = do_speed_test_upload(uploadurls)
+	
+	logger(10, "downband:" .. downband .. " upband:".. upband)
+	
+	if is_band_result_acceptable(downband, upband) then
+		g_ucicursor:set("speedtest", "result", "downband", string.format("%.2f", downband))
+		g_ucicursor:set("speedtest", "result", "upband", string.format("%.2f", upband))
+		g_ucicursor:commit("speedtest")
+	end
+	system_exit()
+end
+
+function main_loop()
+	local downband = g_ucicursor:get("speedtest", "result", "downband") or "0"
+	local upband = g_ucicursor:get("speedtest", "result", "upband") or "0"
+	local times = g_ucicursor:get("speedtest", "do", "times") or "0"
+	local rc
+	
+	if downband ~= "0" and upband ~= "0" then
+        logger(10, "Bandwidth has value, not to do the speed test.")
+		system_exit()
+	end
+	
+	times = tonumber(times) or 0
+	if times >= g_times_speedtest then
+        logger(10, "test times has reach " .. g_times_speedtest .. ", not to do the speed test.")
+		system_exit()
+	end
+	
+	g_mins_nextspeedtest = get_mins_ramdom()
+	logger(10, "speed test mins:" .. g_mins_nextspeedtest)
+	while true do
+		if is_time_to_speedtest() then
+			if is_wireless_extend() then
+				logger(10, "wireless extend, not to do the speed test. in mainloop")
+				system_exit()
+			end
+			
+			rc = do_speed_test()
+			if rc == 0 then
+				system_exit()
+			elseif rc == 1 then
+				-- 不满足测速条件，延后一小时
+				g_mins_nextspeedtest = (g_mins_nextspeedtest + 60) % (24 * 60)
+				logger(10, "not meet conditions, test again 1 hour later, mins:" .. g_mins_nextspeedtest)
+			else
+				-- 测速失败，延后4小时
+				times = times + 1
+				g_ucicursor:set("speedtest", "do", "times", times)
+				g_ucicursor:commit("speedtest")
+				if times >= g_times_speedtest then
+					logger(10, "test times has reach " .. g_times_speedtest .. ", not to do the speed test any more.")
+					system_exit()
+				end
+				
+				g_mins_nextspeedtest = (g_mins_nextspeedtest + 60 * 4) % (24 * 60)
+				logger(10, "speed test fail, test again 4 hour later, mins:" .. g_mins_nextspeedtest)
+			end
+		end
+		px.sleep(60)
+    end
+end
+
+function system_init()
+	if g_debug then
+		os.execute("echo  >> /tmp/speedtest.log")
+		g_debug_file_id = io.open("/tmp/speedtest.log", "a")
+	end
+	
+	local pid = px.getpid("pid")
+	os.execute("echo " .. pid .. " > " .. pid_file)
+	
+	logger(3, "======= speedtest starting ====")
+	logger(10, "pid = " .. pid)
+
+-- SIGTERM to clear and exit
+	px.signal(px.SIGTERM,
+		function ()
+			logger(10,'signal TERM to stop speed test.')
+			system_exit()
+		end)
+
+	px.signal(px.SIGINT,
+		function ()
+			logger(10,'signal INT to stop speed test.')
+			system_exit()
+		end)
+end
+
+function main()
+	local pid = px.fork()
+	
+	if pid == 0 then
+		system_init()
+		px.sleep(1)
+		if is_wireless_extend() then
+			logger(3, "wireless extend, not to do the speed test.")
+			system_exit()
+		end
+		
+		if arg[1] == "now" then
+			local s, e = pcall(do_speed_test_now)
+			if not s then
+				logger(10, e)
+				logger(10, "11pcall exit!")
+			end
+		else
+			local s, e = pcall(main_loop)
+			if not s then
+				logger(10, e)
+				logger(10, "22pcall exit!")
+			end
+		end
+	end
+end
+
+main()
+

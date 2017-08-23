@@ -1,0 +1,8 @@
+Package: wpspbc
+Version: 1.1-1
+Depends: libc, libuci, phicomm_libs
+Source: package/phicomm/wpspbc
+Section: Phicomm Properties
+Architecture: ramips_1004kc
+Installed-Size: 6501
+Description:  unknown

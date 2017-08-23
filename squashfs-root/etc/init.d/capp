@@ -1,0 +1,22 @@
+#!/bin/sh /etc/rc.common
+
+######################################################################
+# Copyright (C) 2016. Shanghai Feixun Communication Co.,Ltd.
+# #
+# # DISCREPTION   : capp自启动脚本
+# # AUTHOR        : jiajian.lv <jiajian.lv@feixun.com.cn>
+# # CREATED DATE  : 2016-06-06
+# # MODIFIED DATE :
+# ######################################################################
+
+START=99
+USE_PROCD=1
+
+start_service()
+{
+    procd_open_instance
+    procd_set_param command /usr/bin/capp 0
+    procd_set_param respawn
+    procd_close_instance
+}
+

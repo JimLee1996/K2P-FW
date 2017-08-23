@@ -1,0 +1,15 @@
+#!/bin/sh
+. /lib/functions/nvram2uci.sh
+
+local dmz_enable dmz_ip
+
+dmz_enable=`nvram get linux dmz_enable 2>/dev/null`
+dmz_ip=`nvram get linux dmz_host_addr 2>/dev/null`
+
+if [ -n "$dmz_enable" ]; then
+	nvram2uci dmz_enable DMZ.DMZ.enable
+fi
+
+if [ -n "$dmz_ip" ]; then
+	nvram2uci dmz_host_addr DMZ.DMZ.dmz_ip
+fi

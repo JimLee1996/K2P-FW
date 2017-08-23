@@ -1,0 +1,11 @@
+#!/bin/sh
+
+/sbin/jffs2reset
+
+cat /proc/cmdline | grep block2mtd > /dev/null
+emmc=$?
+echo $emmc
+[ "$emmc" == "0" ] && {
+	echo "emmc board, need reboot";
+	reboot -f;
+}

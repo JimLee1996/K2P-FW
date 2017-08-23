@@ -1,0 +1,23 @@
+#!/bin/sh
+# Copyright (C) 2006 OpenWrt.org
+# Copyright (C) 2010 Vertical Communications
+
+do_mount_root() {
+	cat /proc/cpuinfo | grep 7623
+	if [ "$?" == "0" ]; then
+		mount_root2
+	else
+		mount_root
+	fi
+	boot_run_hook preinit_mount_root
+	[ -f /sysupgrade.tgz ] && {
+		echo "- config restore -"
+		cd /
+		mv sysupgrade.tgz /tmp
+		tar xzf /tmp/sysupgrade.tgz
+		rm -f /tmp/sysupgrade.tgz
+		sync
+	}
+}
+
+[ "$INITRAMFS" = "1" ] || boot_hook_add preinit_main do_mount_root

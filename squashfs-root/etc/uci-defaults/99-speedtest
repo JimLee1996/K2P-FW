@@ -1,0 +1,14 @@
+#!/bin/sh
+
+[ -z "`uci -q get speedtest.do`" ] && {
+	uci batch <<-EOF >/dev/null 2>&1
+		set speedtest.do=do
+		set speedtest.do.lastdownband=0
+		set speedtest.do.lastupband=0
+		set speedtest.do.times=0
+		commit speedtest
+EOF
+}
+
+exit 0
+

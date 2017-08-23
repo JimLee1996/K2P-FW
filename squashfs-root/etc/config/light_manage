@@ -1,0 +1,10 @@
+config board wireless
+	option dev2g mt7620
+	option dev5g mt7612e
+
+config light pagelight
+	option ignore 1
+
+config light system
+	option boot 0
+

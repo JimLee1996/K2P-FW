@@ -1,0 +1,10 @@
+#!/bin/sh
+
+uci set system.upgrade=upgrade
+uci set system.upgrade.mode=0
+uci set system.upgrade.start_hour=23
+uci set system.upgrade.start_minute=30
+uci commit system
+
+uci set onekeyupgrade.config=config
+uci commit onekeyupgrade

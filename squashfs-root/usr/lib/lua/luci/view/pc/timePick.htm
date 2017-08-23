@@ -1,0 +1,120 @@
+<style type="text/css">
+	div.widget-con{
+		position:absolute;
+		left:0;
+		right:0;
+		top:0px;
+		bottom:0px;
+		width:600px;
+		max-height:630px;
+		overflow:hidden;
+		border-radius:5px;
+		background-color:#FFF;
+		margin:auto;
+	}
+	i.close-btn{
+		top:7px;
+		right:10px;
+	}
+	div.time-pick{
+		margin:0 10px;
+	}
+	p.system-time{
+		margin:20px 35px 20px;
+		font-size:12px;
+		color:#FF9002;
+	}
+	#TimePick{
+		position:absolute;
+		top:45px;
+		bottom:40px;
+		width:545px;
+	}
+	ul.hourList{
+		font-size:0;
+		float:left;
+		padding-right:12px;
+		text-align:right;
+		list-style:none;
+	}
+	ul.hourList li{
+		font-size:12px;
+		height:21px;
+		color:#4f5356;
+	}
+	ul.weekList{
+		margin-left:80px;
+		margin-bottom:-3px;
+	}
+	ul.weekList li{
+		color:#4f5356;
+		font-size:12px;
+		width:65px;
+		text-align:center;
+		display:inline-block;
+	}
+	table.tableWeek{
+		float:left;
+		margin-top:7px;
+		margin-left:0px;
+		font-weight:normal;
+		border-collapse:collapse;
+	}
+	td.weekTd{
+		border:1px solid #DDD;
+		margin:0px;
+		font-size:0px;
+		text-align:center;
+	}
+	i.tableICell{
+		display:inline-block;
+	}
+	div.pick-tip{
+		position:absolute;
+		bottom:20px;
+	}
+	span.pick-desc{
+		font-size:12px;
+		line-height:16px;
+		vertical-align:middle;
+		color:#4F5356;
+		margin:0 10px 0 80px;
+	}
+	span.cell-selected{
+		display:inline-block;
+		width:16px;
+		height:16px;
+		line-height:16px;
+		background-color:#FF9002;
+		vertical-align:middle;
+	}
+</style>
+<script type="text/javascript">
+(function(){
+	//TODO
+	var time = "Thur 9th Mar 2017 16:23:23 GMT-08:00";
+
+	$("#SysTime").text(time);
+
+	//TODO
+	var schedule = [255, 0, 0, 0, 0, 0, 31];
+	dateCtl = new DateControl("TimePick", {dateArray:schedule});
+
+	// 获取已选中时间
+	var sleDate = dateCtl.getSelDate();
+	console.log(sleDate);
+
+	var TimePickScroll = new NiceScroll("TimePick");
+	TimePickScroll.init();
+})();
+</script>
+<div class="widget-con">
+	<i class="tip icon_close color-red close-btn"></i>
+	<div class="time-pick">
+		<p class="system-time">{%label.sysTime%}{%label.colon%}<span id="SysTime"></span></p>
+		<div id="TimePick"></div>
+		<div class="pick-tip">
+			<span class="pick-desc">{%label.accTime%}</span><span class="cell-selected"></span>
+		</div>
+	</div>
+</div>

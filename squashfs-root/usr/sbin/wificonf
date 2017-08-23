@@ -1,0 +1,45 @@
+#!/bin/sh
+
+usage() {
+	echo "wificonf path <path>"
+	echo "wificonf set <key> <value>"
+	echo "wificonf get <key>"
+	echo "wificonf del <key>"
+}
+
+
+[ "$1" == "path" -a "$#" == 2 ] && {
+	echo -n $2 > /tmp/.wificonf;
+	echo "now working on $2"
+	exit
+}
+
+[ "$1" == "get" -a "$#" == 2 ] && {
+	path=`cat /tmp/.wificonf`
+	[ -f $path ] || { echo "invalid profile path: $path"; exit; }
+	cat $path | grep $2= | sed "s/^$2=//g"
+	exit
+}
+
+[ "$1" == "set" -a "$#" == 3 ] && {
+	path=`cat /tmp/.wificonf`
+	[ -f $path ] || { echo "invalid profile path: $path"; exit; }
+	#echo "s/$2=.*$/$2=$3/g"
+	cat $path | grep $2= > /dev/null
+	if [ $? == 0 ]; then
+		sed -i -e "s/^$2=.*$/$2=$3/g" $path
+	else
+		printf "\n$2=$3" >> $path
+	fi
+	exit
+}
+
+[ "$1" == "del" -a "$#" == 2 ] && {
+	path=`cat /tmp/.wificonf`
+	[ -f $path ] || { echo "invalid profile path: $path"; exit; }
+	sed -i "/^$2=/d" $path
+	exit
+}
+
+echo "invalid arguments! \"$@\""
+usage

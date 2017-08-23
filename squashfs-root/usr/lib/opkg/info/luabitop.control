@@ -1,0 +1,9 @@
+Package: luabitop
+Version: 1.0.2-1
+Depends: libc, lua
+Source: feeds/packages/lang/luabitop
+Section: lang
+Maintainer: Maxim Storchak <m.storchak@gmail.com>
+Architecture: ramips_1004kc
+Installed-Size: 2357
+Description:  unknown

@@ -1,0 +1,9 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2016 www.phicomm.com
+
+START=96 #挂载永久分区的优先级是 95
+
+start() {
+	[ ! -e "/permanent_config/aes_key" ] && genrandkey
+}
+

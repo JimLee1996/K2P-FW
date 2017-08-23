@@ -1,0 +1,8 @@
+Package: phicomm_libs
+Version: 1
+Depends: libc, libuci, liblua, libpthread
+Source: package/phicomm/phicomm_libs
+Section: Phicomm Properties
+Architecture: ramips_1004kc
+Installed-Size: 8972
+Description:  unknown

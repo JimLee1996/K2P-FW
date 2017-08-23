@@ -1,0 +1,20 @@
+#!/bin/sh
+
+enable=`uci get timereboot.timereboot.enable`
+
+exist=`cat /etc/crontabs/root | grep reboot`
+
+if [[ "$enable" == "1" ]];then
+	if [[ -n "$exist" ]];then
+		sed -i "/reboot/d" /etc/crontabs/root
+	fi
+	hour=`uci get timereboot.timereboot.hour`
+	minute=`uci get timereboot.timereboot.minute`
+	echo "$minute $hour * * * reboot -f" >> /etc/crontabs/root
+	/etc/init.d/cron restart
+else
+	if [[ -n "$exist" ]];then
+		sed -i "/reboot/d" /etc/crontabs/root
+		/etc/init.d/cron restart
+	fi
+fi

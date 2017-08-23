@@ -1,0 +1,3 @@
+config DMZ 'DMZ'
+	option enable '0'
+	option dmz_ip ''

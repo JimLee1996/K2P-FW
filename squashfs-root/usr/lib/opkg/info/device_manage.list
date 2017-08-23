@@ -1,0 +1,7 @@
+/etc/uci-defaults/config_change
+/etc/config/device_manage
+/usr/lib/lua/luci/adapter/device_mng.so
+/usr/lib/device_manage_set.sh
+/etc/hotplug.d/ip_event/10-device_manage
+/etc/init.d/device_manage
+/usr/bin/device_manage_set

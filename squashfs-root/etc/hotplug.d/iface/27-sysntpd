@@ -1,0 +1,6 @@
+#!/bin/sh
+
+[ "$ACTION" = "ifup" -a "$INTERFACE" = "wan" ] && {
+	/etc/init.d/sysntpd restart
+}
+

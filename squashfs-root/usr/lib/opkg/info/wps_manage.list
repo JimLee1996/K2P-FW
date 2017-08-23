@@ -1,0 +1,4 @@
+/usr/bin/wps_manage
+/etc/nvram2uci/wpsset
+/etc/config/wps_config
+/etc/cfgAdaptor/wps_enable.sh
