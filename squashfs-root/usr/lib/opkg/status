@@ -1344,14 +1344,6 @@ Architecture: ramips_1004kc
 Installed-Time: 1502269015
 Auto-Installed: yes
 
-Package: http
-Version: 1
-Depends: libc, libuci, libnl-tiny, libubus, ubus, ubusd, jshn, libubox
-Provides:
-Status: install user installed
-Architecture: ramips_1004kc
-Installed-Time: 1502269016
-
 Package: wireless-tools
 Version: 29-5
 Depends: libc

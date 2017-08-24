@@ -59,4 +59,9 @@ Removing package telnetd_startup from root...
 ```
 
 
+- http
 
+```
+root@ubuntu64:~/k2p/squashfs-root# opkg remove http --autoremove
+Removing package http from root...
+```

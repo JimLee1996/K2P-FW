@@ -1,8 +1,0 @@
-Package: http
-Version: 1
-Depends: libc, libuci, libnl-tiny, libubus, ubus, ubusd, jshn, libubox
-Source: package/phicomm/http
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 26245
-Description:  unknown
