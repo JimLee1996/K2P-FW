@@ -85,6 +85,7 @@ var pcStates = {
   "pc.backupResetApp": load("backupReset", "Content"),
   "pc.dhcpServerApp": load("dhcp", "Content"),
   "pc.shoppingPriceApp": load("shopPrice", "Content"),
+  "pc.autoUpgradeApp": load("sysUpgrade", "Content"),
   "pc.manualUpgradeApp": load("manualUpgrade", "Content"),
   "pc.remotePrinterApp": load("printer", "Content"),
   "pc.safeMngApp": load("safeMng", "Content"),
@@ -101,7 +102,7 @@ var pcStates = {
   "pc.lightApp":load("light","Content"),
   "pc.adbApp":load("adb","Content"),
   "pc.adbsetApp":load("adbset","Content"),
-  "pc.toolsApp":load("tools","Content"),  
+  "pc.toolsApp":load("tools","Content"),
   "pc.elinkApp":load("elink","Content"),
   "pc.schemeUpgrade":function(){  // 策略升级
     showLoading(label.versionChecking);
