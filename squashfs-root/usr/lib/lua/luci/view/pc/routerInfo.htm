@@ -8,6 +8,13 @@
 			wisp = {config = {}}
 		}
 		local data = tpl_get_data(para, true)
+mdate = luci.util.exec("date +'%Y/%m/%d %H:%M'") 
+    cpuv = luci.util.exec("top -n 1|grep Load|grep -v grep|awk '{print $3','$4','$5}'")
+    cpuv2= luci.util.exec("top -n 1|grep idle|grep -v grep|awk '{print $2}' ")
+    cpuv=cpuv2 .. " (负载：" ..cpuv ..")"
+    memv = luci.util.exec("free |grep '-'|awk '{printf $4}' ")
+    memv2=math.ceil(100-tonumber(memv)*100/121388)
+    memv=tostring(memv2) .. "% (空闲：" ..  memv .. "K)"
 	-%>
 	var sysStatus = <%=data%>;
 	var currentState = stateman.current.name;
@@ -48,6 +55,26 @@
 			$.setTimeout(refreshStatus, 2000);
 		});
 	}
+        $("#rebootbutton").click(function(){
+              showConfirm(label.routerReboot, function(choose){
+				if (choose){
+					$.sendAjax('/system/reboot', null, function(){
+						showProgressBar(label.rebootEquipment, label.rebooting, ROUTER.time.reboot, function(){
+							window.location.reload();
+						});
+
+						$.setTimeout(function(){
+							// 检测LAN是否可以连接DUT
+							lanDetecting(function(){
+								window.location.reload();
+							});
+						}, ROUTER.time.detectDelay);
+					});
+				}
+			});
+
+              
+        })
 	function initPage(result){
 		var errNo = result[ERR_CODE];
 		if (E_NONE == errNo){
@@ -59,6 +86,8 @@
 
 		// 系统信息
 		var sys = ret.device.info;
+			
+		//$("#Systime").text("<%=date%>");
 		$("#Uptime").text(timeTrans(sys.uptime));
 		$("#Product").text(sys.model);
 		$("#Sw").text(sys.sw_ver);
@@ -287,22 +316,39 @@
 		<h2 class="status-title">{%label.systemInfo%}</h2>
 		<li class="middle-con">
 			<p class="status-detail list-bg">
+				<label class="item-name">系统时间：</label>
+				<span class="item-status" id="Systime"><%=mdate%></span>
+			</p>
+			<p class="status-detail ">
 				<label class="item-name">{%label.runningTime%}{%label.colon%}</label>
 				<span class="item-status" id="Uptime"></span>
 			</p>
-			<p class="status-detail">
+			<p class="status-detail list-bg">
 				<label class="item-name">{%label.deviceModel%}{%label.colon%}</label>
 				<span class="item-status" id="Product"></span>
+&nbsp<span><input type="button" class="btn" id="rebootbutton" style="width:56px;margin-top: 1px;margin-bottom: 5px;height: 22px;line-height: 22px;" value="&nbsp重启"> 
+			</p>
+			<p class="status-detail ">
+				<label class="item-name">CPU占用：</label>
+				<span class="item-status" id="Systime"><%=cpuv%></span>
 			</p>
 		</li>
 		<li class="middle-con right-con">
 			<p class="status-detail list-bg">
+				<label class="item-name">Jim's Mod：</label>
+				<span class="item-status" id="MySw">V2.0</span>
+			</p>
+			<p class="status-detail">
 				<label class="item-name">{%label.swVersion%}{%label.colon%}</label>
 				<span class="item-status" id="Sw"></span>
 			</p>
-			<p class="status-detail">
+			<p class="status-detail list-bg">
 				<label class="item-name">{%label.hwVersion%}{%label.colon%}</label>
 				<span class="item-status" id="Hw"></span>
+			</p>
+			<p class="status-detail ">
+				<label class="item-name">内存占用：</label>
+				<span class="item-status" id="MySw"><%=memv%></span>
 			</p>
 		</li>
 	</ul>
