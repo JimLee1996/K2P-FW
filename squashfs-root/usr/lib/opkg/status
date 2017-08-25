@@ -83,6 +83,14 @@ Status: install user installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269016
 
+Package: wget
+Version: 1.16.3-1
+Depends: libc, libpcre, libopenssl, librt
+Provides:
+Status: install user installed
+Architecture: ramips_1004kc
+Installed-Time: 1503671792
+
 Package: kmod-usb-core
 Version: 3.10.14-1
 Depends: kernel (= 3.10.14-1-b111ad83351afe639183d8564c3857ca), kmod-nls-base
@@ -160,14 +168,6 @@ Status: install user installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269017
 
-Package: autodetect
-Version: 1
-Depends: libc, phicomm_libs
-Provides:
-Status: install user installed
-Architecture: ramips_1004kc
-Installed-Time: 1502269015
-
 Package: libiwinfo-lua
 Version: 51
 Depends: libc, libiwinfo, liblua
@@ -175,6 +175,14 @@ Provides:
 Status: install user installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269017
+
+Package: autodetect
+Version: 1
+Depends: libc, phicomm_libs
+Provides:
+Status: install user installed
+Architecture: ramips_1004kc
+Installed-Time: 1502269015
 
 Package: arptables
 Version: 0.0.4-1
@@ -388,6 +396,15 @@ Architecture: ramips_1004kc
 Installed-Time: 1502269015
 Auto-Installed: yes
 
+Package: libmnl
+Version: 1.0.3-1
+Depends: libc
+Provides:
+Status: install user installed
+Architecture: ramips_1004kc
+Installed-Time: 1502269015
+Auto-Installed: yes
+
 Package: ddns-scripts
 Version: 1.0.0-23
 Depends: libc
@@ -397,15 +414,6 @@ Architecture: ramips_1004kc
 Conffiles:
  /etc/config/ddns 5438cd197244324c9400275a93574414
 Installed-Time: 1502269015
-
-Package: libmnl
-Version: 1.0.3-1
-Depends: libc
-Provides:
-Status: install user installed
-Architecture: ramips_1004kc
-Installed-Time: 1502269015
-Auto-Installed: yes
 
 Package: wpspbc
 Version: 1.1-1
@@ -664,17 +672,17 @@ Status: install hold installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269016
 
-Package: uboot-sop-mtk
-Version: 1
-Depends: libc
+Package: uci
+Version: 2014-04-11.1-1
+Depends: libc, libuci
 Provides:
 Status: install user installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269018
 
-Package: uci
-Version: 2014-04-11.1-1
-Depends: libc, libuci
+Package: uboot-sop-mtk
+Version: 1
+Depends: libc
 Provides:
 Status: install user installed
 Architecture: ramips_1004kc
@@ -695,6 +703,14 @@ Provides:
 Status: install user installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269017
+
+Package: curl
+Version: 7.40.0-3.1
+Depends: libc, libcurl
+Provides:
+Status: install user installed
+Architecture: ramips_1004kc
+Installed-Time: 1503671787
 
 Package: kmod-nls-utf8
 Version: 3.10.14-1
@@ -1124,14 +1140,6 @@ Status: install user installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269017
 
-Package: ip6tables
-Version: 1.4.21-1
-Depends: libc, kmod-ip6tables, iptables
-Provides:
-Status: install user installed
-Architecture: ramips_1004kc
-Installed-Time: 1502269016
-
 Package: libxtables
 Version: 1.4.21-1
 Depends: libc
@@ -1140,6 +1148,14 @@ Status: install user installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269016
 Auto-Installed: yes
+
+Package: ip6tables
+Version: 1.4.21-1
+Depends: libc, kmod-ip6tables, iptables
+Provides:
+Status: install user installed
+Architecture: ramips_1004kc
+Installed-Time: 1502269016
 
 Package: lighttpd-mod-redirect
 Version: 1.4.35-2
@@ -1207,14 +1223,6 @@ Status: install hold installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269016
 
-Package: kmod-hw_wdg
-Version: 3.10.14-1
-Depends: kernel (= 3.10.14-1-b111ad83351afe639183d8564c3857ca)
-Provides:
-Status: install hold installed
-Architecture: ramips_1004kc
-Installed-Time: 1502269016
-
 Package: luci-lib-json
 Version: 1.0.0-1
 Depends: libc
@@ -1222,6 +1230,14 @@ Provides:
 Status: install user installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269017
+
+Package: kmod-hw_wdg
+Version: 3.10.14-1
+Depends: kernel (= 3.10.14-1-b111ad83351afe639183d8564c3857ca)
+Provides:
+Status: install hold installed
+Architecture: ramips_1004kc
+Installed-Time: 1502269016
 
 Package: kmod-nls-iso8859-1
 Version: 3.10.14-1
