@@ -1,0 +1,8 @@
+Package: guest_control
+Version: 1
+Depends: libc
+Source: package/phicomm/guest_control
+Section: Phicomm Properties
+Architecture: ramips_1004kc
+Installed-Size: 443
+Description:  unknown

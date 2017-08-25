@@ -1,0 +1,43 @@
+#!/bin/sh
+. /lib/functions.sh
+
+uci -q batch <<-EOF >/dev/null
+	delete ucitrack.@appportfwd[-1]
+	add ucitrack appportfwd
+	set ucitrack.@appportfwd[-1].init=portfwd
+EOF
+
+rm -f /tmp/luci-indexcache
+
+change_rule() {
+	local startport
+	local endport
+	local exterport
+	local interport
+	local cfg="$1"
+
+	config_get startport $cfg startport
+	config_get endport $cfg endport
+
+	if [ -z "$startport" ]; then
+		return 1
+	elif [ $startport == $endport ]; then
+		exterport=$startport
+		interport=$startport
+	else
+		exterport=$startport"-"$endport
+		interport=$startport"-"$endport
+	fi
+
+	uci delete appportfwd.$cfg.startport
+	uci delete appportfwd.$cfg.endport
+
+	uci set appportfwd.$cfg.exterport=$exterport
+	uci set appportfwd.$cfg.interport=$interport
+}
+
+config_load appportfwd
+config_foreach change_rule setting
+uci commit appportfwd
+
+exit 0

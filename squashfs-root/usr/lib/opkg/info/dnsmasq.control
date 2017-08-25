@@ -1,0 +1,10 @@
+Package: dnsmasq
+Version: 2.71-4
+Depends: libc
+Source: package/network/services/dnsmasq
+License: GPLv2
+LicenseFiles: COPYING
+Section: net
+Architecture: ramips_1004kc
+Installed-Size: 95302
+Description:  unknown

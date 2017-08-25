@@ -1,0 +1,2 @@
+/etc/modules.d/ipt-indev
+/lib/modules/3.10.14/xt_indev.ko

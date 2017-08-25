@@ -1,0 +1,8 @@
+/usr/lib/lua/luci/view/h5/apList.htm
+/usr/lib/lua/luci/view/h5/wisp.htm
+/www/luci-static/images/app-icon/wisp.png
+/usr/lib/lua/luci/controller/admin/wifi_extend.lua
+/usr/lib/lua/luci/data/wifi_extend.lua
+/usr/lib/lua/luci/view/pc/setExtend.htm
+/usr/lib/lua/luci/view/h5/setExtend.htm
+/usr/lib/lua/luci/view/pc/wisp.htm

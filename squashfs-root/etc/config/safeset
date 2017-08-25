@@ -1,0 +1,12 @@
+
+config safeset 'config'
+        option spi_enable '1'
+        option ddos_enable '0'
+        option icmp_flood '1'
+        option udp_flood '1'
+        option syn_flood '1'
+        option icmpflood_rate '50'
+        option udpflood_rate '500'
+        option synflood_rate '50'
+        option ping_disable '0'
+

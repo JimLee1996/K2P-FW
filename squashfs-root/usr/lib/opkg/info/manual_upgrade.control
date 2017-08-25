@@ -1,0 +1,8 @@
+Package: manual_upgrade
+Version: 1
+Depends: libc, libopenssl, phicomm_libs, libjson-c
+Source: package/phicomm/manual_upgrade
+Section: Phicomm Properties
+Architecture: ramips_1004kc
+Installed-Size: 10166
+Description:  unknown

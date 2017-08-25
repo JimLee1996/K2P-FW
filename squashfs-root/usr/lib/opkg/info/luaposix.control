@@ -1,0 +1,9 @@
+Package: luaposix
+Version: v32-1
+Depends: libc, lua, librt, luabitop
+Source: feeds/packages/lang/luaposix
+Section: lang
+Maintainer: Maxim Storchak <m.storchak@gmail.com>
+Architecture: ramips_1004kc
+Installed-Size: 25418
+Description:  unknown

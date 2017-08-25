@@ -1,0 +1,4 @@
+/usr/lib/lua/luci/data/ddns.lua
+/usr/lib/lua/luci/view/pc/ddns.htm
+/usr/lib/lua/luci/controller/admin/ddns.lua
+/www/luci-static/images/app-icon/ddns.png

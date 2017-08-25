@@ -1,0 +1,277 @@
+<style type="text/css">
+	div.upgrade{
+		width:500px;
+		background-color:#ffffff;
+		margin:160px auto;
+		padding:1px;
+		border-radius:4px;
+	}
+	div.upgrade-head{
+		position:relative;
+		height:50px;
+		background-color: #f8f8f8;
+	}
+	div.upgrade-head h2.title{
+		font-size:16px;
+		color:#3e4043;
+		padding-top:16px;
+		padding-left:25px;
+	}
+	div.upgrade-head img.logo{
+		position:absolute;
+		top:16px;
+		right:19px;
+		width:130px;
+		height:19px;
+	}
+	div.upgrade-detail{
+		position:relative;
+		min-height:185px;
+		margin-top:15px;
+	}
+	p.software-info{
+		color:#9399a2;
+		font-size:14px;
+		text-align:left;
+		margin:0 25px 12px;
+		line-height:18px;
+		overflow:hidden;
+		text-overflow:ellipsis;
+		white-space:nowrap;
+	}
+	span.new{
+		margin-left:6em;
+	}
+	h3.upgrade-log{
+		position:absolute;
+		color:#ff9000;
+		font-size:14px;
+		left:25px;
+		top:63px;
+	}
+	#log{
+		margin-left:123px;
+		font-size:14px;
+		color:#3e4043;
+		line-height:25px;
+	}
+	div.upgrade-footer{
+		font-size:0;
+		height:70px;
+		text-align:center;
+	}
+	div.upgrade-footer input.fun-btn{
+		width:200px;
+		height:40px;
+		margin:10px 21px;
+		cursor:pointer;
+		font-size:14px;
+	}
+	#UpgradeNow{
+		color:#ffffff;
+		background-color:#ff9000;
+	}
+	#Later{
+		color:#3e4043;
+		background-color:#f1f1f1;
+		border:solid 1px #e7e7e7;
+	}
+	/*适配1080p*/
+	@media screen and (min-device-width:1920px){
+		div.upgrade {
+			width: 660px;
+			margin: 200px auto;
+		}
+		div.upgrade-head{
+			height:60px;
+		}
+		div.upgrade-head h2.title {
+			font-size: 20px;
+		}
+		div.upgrade-detail {
+			min-height: 264px;
+		}
+		p.software-info,
+		h3.upgrade-log {
+			font-size: 17px;
+		}
+		span.new{
+			margin-left:8em;
+		}
+		#log{
+			margin-left:142px;
+			font-size:17px;
+		}
+		div.upgrade-footer{
+			height:85px;
+		}
+		div.upgrade-footer input.fun-btn {
+			font-size: 18px;
+			width: 265px !important;
+			height: 54px;
+		}
+	}
+</style>
+<script type="text/javascript">
+(function(){
+	$("#UpgradeNow").click(function(){
+		showLoading(label.versionChecking);
+
+		var para = {
+			system:{upgrade_info:{action:"upgrade"}}
+		};
+
+		apiGet(para, function(ret){
+			var code = ret[ERR_CODE];
+			if (E_NONE == code){
+				$.setTimeout(upgradeStatus, 1000);
+			}
+		});
+	});
+
+	var upgradeStatusHd = null;
+	function upgradeStatus(){
+		var para = {
+			system:{upgrade_info:{action:"upgrade_status"}}
+		};
+
+		apiGet(para, function(ret){
+			var info = ret[K_MODULE]["system"]["upgrade_info"];
+			var status = info.running_status;
+			var code = parseInt(info.status_code, 10);
+
+			if (4 == status){
+				if (0 == code){
+					clearTimeout(upgradeStatusHd);
+					showProgressBar(label.upgrading, label.upgradingTips, ROUTER.time.onlineUpgrade, function(){
+						window.location.reload();
+					});
+
+					$.setTimeout(function(){
+						// 检测LAN是否可以连接DUT
+						lanDetecting(function(){
+							window.location.reload();
+						});
+					}, ROUTER.time.detectDelay);
+				}
+			}else if(0 == status){
+				clearTimeout(upgradeStatusHd);
+				statusHandle(status, code);
+			}else{
+				switch(code){
+				case 0:
+					showStatus(status);
+					upgradeStatusHd = $.setTimeout(upgradeStatus, 1000);
+					break;
+				default:
+					clearTimeout(upgradeStatusHd);
+					statusHandle(status, code);
+					break;
+				}
+			}
+		});
+	}
+
+	function showStatus(status){
+		if(1 == status){
+			showLoading(label.versionChecking);
+		}else if(2 == status){
+			showLoading(label.downloadingTip);
+		}else if(3 == status){
+			showLoading(label.upgradeChecking);
+		}
+	}
+
+	function statusHandle(status, code){
+		var noteStr = "";
+
+		if(1 == status){
+			switch(code){
+			case 1://当前已经是最新版本
+				noteStr = errStr.versionIsNewest;
+				break;
+			case 2://网络异常导致获取新版本失败
+				noteStr = errStr.getNewVersionErr;
+				break;
+			default:
+				noteStr = errStr.unknownErr + status + code;
+				break;
+			}
+		}else if(2 == status){
+			switch(code){
+			case 1://有一个下载例程在进行
+				noteStr = errStr.downloadUnderway;
+				break;
+			case 2://下载失败
+				noteStr = errStr.downloadFail;
+				break;
+			default:
+				noteStr = errStr.unknownErr + status + code;
+				break;
+			}
+		}else if(3 == status){
+			switch(code){
+			case 1://不合法升级文件
+				noteStr = errStr.upgradeFileErr;
+				break;
+			case 2://不匹配硬件设备
+				noteStr = errStr.fwNoMatchHw;
+				break;
+			case 3://不匹配产品型号
+				noteStr = errStr.fwNoMatchPrdct;
+				break;
+			case 4://当前版本不满足最低版本要求
+				noteStr = errStr.fwVerTooLow;
+				break;
+			case 5://当前固件版本不支持版本降级
+				noteStr = errStr.noAllowReduceVer;
+				break;
+			case 6://系统错误
+				noteStr = errStr.systemErr;
+				break;
+			case 7://有其他升级程序正在运行
+				noteStr = errStr.upgradeUnderway;
+				break;
+			case 8://校验信息获取失败
+				noteStr = errStr.checkInfoFail;
+				break;
+			default:
+				noteStr = errStr.unknownErr + status + code;
+				break;
+			}
+		}else{
+			noteStr = errStr.unknownErr + status + code;
+		}
+
+		showAlert(noteStr);
+	}
+
+	$("#Later").click(function(){
+		$(".close-btn").click();
+
+		try{
+			sessionLS.setItem("upgradeWgt", "hide");
+		}catch(e){}
+	});
+})();
+</script>
+<div class="upgrade">
+	<div class="upgrade-head"><i class="tip icon_close color-red close-btn invisible"></i>
+	<h2 class="title">{%label.newSwTip%}</h2><img class="logo" src="/luci-static/images/phicomm.png?_=20170809165512" alt="PHICOMMM" />
+	</div>
+	<div class="upgrade-detail">
+		<p class="software-info">
+			<span class="curent">{%label.curVer%}{%label.colon%}</span><span id="curent"></span>
+			<span class="new">{%label.newVer%}{%label.colon%}</span><span id="new"></span>
+		</p>
+		<p class="software-info">
+			<span class="release">{%label.realeaseTime%}{%label.colon%}</span><span id="time"></span>
+		</p>
+		<h3 class="upgrade-log">{%label.realeaseLog%}{%label.colon%}</h3>
+		<p id="log"></p>
+	</div>
+	<div class="upgrade-footer">
+		<input id="Later" class="btn fun-btn" type="button" value="{%btn.dontUpgradeNow%}" />
+		<input id="UpgradeNow" class="btn fun-btn" type="button" value="{%btn.upgradeNow%}" />
+	</div>
+</div>

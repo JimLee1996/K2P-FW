@@ -1,0 +1,10 @@
+/etc/init.d/portfwd
+/etc/hotplug.d/iface/71-appportfwd
+/www/luci-static/images/app-icon/port_forward.png
+/etc/uci-defaults/luci-portfwd
+/etc/config/appportfwd
+/etc/nvram2uci/portfwd
+/etc/cfgAdaptor/port_forward.sh
+/usr/lib/lua/luci/data/port_forward.lua
+/usr/lib/lua/luci/controller/admin/port_forward.lua
+/usr/lib/lua/luci/view/pc/portForwad.htm

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ "$ACTION" = "ifup" -a "$INTERFACE" = "wan" ]; then
+	report=`uci get collect.main.report_flag 2>/dev/null`
+	if [ -n "$report" ]; then
+		if [ "$report" = "1" ]; then
+			ps | grep up_data | grep -v grep
+			if [ $? -ne 0 ]; then
+				up_data needreport &
+			fi
+		fi
+	fi
+fi

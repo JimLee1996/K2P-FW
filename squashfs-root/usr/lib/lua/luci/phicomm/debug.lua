@@ -1,0 +1,2 @@
+module("luci.phicomm.debug",package.seeall)function print(e,l)local c=require("luci.json")local l="/dev/console"local o=getfenv(2)._NAME
+local e=string.format('echo "%s: %s " > %s',o,c.encode(e),l)os.execute(e)end

@@ -1,0 +1,8 @@
+Package: iptables-mod-capp
+Version: 1.4.21-1
+Depends: libc, iptables, kmod-ipt-capp
+Source: package/network/utils/iptables
+Section: net
+Architecture: ramips_1004kc
+Installed-Size: 1161
+Description:  unknown

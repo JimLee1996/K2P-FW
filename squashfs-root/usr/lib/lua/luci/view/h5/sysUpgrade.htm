@@ -1,0 +1,396 @@
+<script type="text/javascript">
+(function(){
+	function startCheck(){
+		$("#Check").unbind("click");
+		$("input.start").hide();
+
+		$("#DetailCon").hide();
+		$("#ManualUpgrade").hide();
+		$(".head-con").removeClass("state-warn state-ok").addClass("state-init");
+		$(".running-con").removeClass("state-warn state-ok").addClass("state-init");
+		$(".inside-circle").show();
+		$("#Status").text(label.upgradeChecking);
+
+		var para = {
+			system:{upgrade_info:{action:"start"}}
+		};
+
+		apiGet(para, function(){
+			$.setTimeout(checkUpgrade, 3000);
+		});
+	}
+
+	function checkUpgrade(){
+		var para = {
+			system:{upgrade_info:{action:"get"}}
+		};
+
+		apiGet(para, function(data){
+			var info = data[K_MODULE]["system"]["upgrade_info"];
+			var status = info.running_status;
+
+			if ("2" == status){	// 升级检查完成
+				$(".inside-circle").hide();
+
+				var code = parseInt(info.status_code, 10);
+				if (1 == info.status_code){	// 有新版本
+					$(".head-con").removeClass("state-init state-warn").addClass("state-ok");
+					$(".running-con").removeClass("state-init state-warn").addClass("state-ok");
+					$("#Status").text(label.hasNewSw);
+					$("#NewSwVer").html(info.new_ver);
+					var log = unescape(info.release_log.replace(/#x/g,'%u').replace(/\n/g,'<br>'));
+					$("#NewSwLog").html(log);
+					$("#DetailCon").show();
+					$("#ManualUpgrade").hide();
+				}else{
+					switch(code){
+					case 0:
+						errInfo = label.swIsNewest
+						break;
+					case 8801:
+						errInfo= label.serveBusy;
+						break;
+					case 8802:
+						errInfo= label.serverError;
+						break;
+					case 8803:
+						errInfo= label.argsInvalid;
+						break;
+					case 8804:
+						errInfo= label.swIsNewest;
+						break;
+					default:
+						errInfo= label.checkFail;
+						break;
+					}
+
+					if (0 != code && 8804 != code){
+						$(".head-con").removeClass("state-init state-ok").addClass("state-warn");
+						$(".running-con").removeClass("state-init state-ok").addClass("state-warn");
+					}else{
+						$(".head-con").removeClass("state-init state-warn").addClass("state-ok");
+						$(".running-con").removeClass("state-init state-warn").addClass("state-ok");
+					}
+
+					$("#Status").text(errInfo);
+					$("#DetailCon").hide();
+					$("#ManualUpgrade").show();
+				}
+
+				$("input.start").val(btn.reCheckUpdate).show();
+				$("#Check").click(startCheck);
+			}else{
+				$.setTimeout(checkUpgrade, 3000);
+			}
+		});
+	}
+
+	$("#Check").click(startCheck);
+
+	function errHandle(errNo){
+		var noteStr = "";
+
+		switch (errNo)
+		{
+		case E_INVUPFILE://不合法升级文件
+			noteStr = errStr.upgradeFileErr;
+			break;
+		case E_INVUPHWID://不匹配硬件设备
+			noteStr = errStr.fwNoMatchHw;
+			break;
+		case E_INVUPPRODUCTID://不匹配产品型号
+			noteStr = errStr.fwNoMatchPrdct;
+			break;
+		case E_INVUPREQVER://当前版本不满足最低版本要求
+			noteStr = errStr.fwVerTooLow;
+			break;
+		case E_INVUPDGVER://当前固件版本不支持版本降级
+			noteStr = errStr.noAllowReduceVer;
+			break;
+		case E_DOWNFAIL_FAIL://自动升级下载固件失败
+			noteStr = errStr.downloadFail;
+			break;
+		default:
+			noteStr = errStr.unknownErr + errNo;
+			break;
+		}
+
+		showNote(noteStr);
+	}
+
+	$("#Upgrade").click(function(){
+		showLoading(label.versionChecking);
+
+		var para = {
+			system:{upgrade_info:{action:"upgrade"}}
+		};
+
+		apiGet(para, function(ret){
+			var code = ret[ERR_CODE];
+			if (E_NONE == code){
+				$.setTimeout(upgradeStatus, 1000);
+			}
+		});
+	});
+
+	var upgradeStatusHd = null;
+	function upgradeStatus(){
+		var para = {
+			system:{upgrade_info:{action:"upgrade_status"}}
+		};
+
+		apiGet(para, function(ret){
+			var info = ret[K_MODULE]["system"]["upgrade_info"];
+			var status = info.running_status;
+			var code = parseInt(info.status_code, 10);
+
+			if (4 == status){
+				if (0 == code){
+					clearTimeout(upgradeStatusHd);
+					$.setTimeout(function(){
+						window.location.reload();
+					}, ROUTER.time.onlineUpgrade);
+
+					$.setTimeout(function(){
+						// 检测LAN是否可以连接DUT
+						lanDetecting(function(){
+							window.location.reload();
+						});
+					}, ROUTER.time.detectDelay);
+				}
+			}else if(0 == status){
+				closeLoading();
+				clearTimeout(upgradeStatusHd);
+				statusHandle(status, code);
+			}else{
+				switch(code){
+				case 0:
+					showStatus(status);
+					upgradeStatusHd = $.setTimeout(upgradeStatus, 1000);
+					break;
+				default:
+					closeLoading();
+					clearTimeout(upgradeStatusHd);
+					statusHandle(status, code);
+					break;
+				}
+			}
+		});
+	}
+
+	function showStatus(status){
+		if(1 == status){
+			showLoading(label.versionChecking);
+		}else if(2 == status){
+			showLoading(label.downloadingTip);
+		}else if(3 == status){
+			showLoading(label.upgradeChecking);
+		}
+	}
+
+	function statusHandle(status, code){
+		var noteStr = "";
+
+		if(1 == status){
+			switch(code){
+			case 1://当前已经是最新版本
+				noteStr = errStr.versionIsNewest;
+				break;
+			case 2://网络异常导致获取新版本失败
+				noteStr = errStr.getNewVersionErr;
+				break;
+			default:
+				noteStr = errStr.unknownErr + status + code;
+				break;
+			}
+		}else if(2 == status){
+			switch(code){
+			case 1://有一个下载例程在进行
+				noteStr = errStr.downloadUnderway;
+				break;
+			case 2://下载失败
+				noteStr = errStr.downloadFail;
+				break;
+			default:
+				noteStr = errStr.unknownErr + status + code;
+				break;
+			}
+		}else if(3 == status){
+			switch(code){
+			case 1://不合法升级文件
+				noteStr = errStr.upgradeFileErr;
+				break;
+			case 2://不匹配硬件设备
+				noteStr = errStr.fwNoMatchHw;
+				break;
+			case 3://不匹配产品型号
+				noteStr = errStr.fwNoMatchPrdct;
+				break;
+			case 4://当前版本不满足最低版本要求
+				noteStr = errStr.fwVerTooLow;
+				break;
+			case 5://当前固件版本不支持版本降级
+				noteStr = errStr.noAllowReduceVer;
+				break;
+			case 6://系统错误
+				noteStr = errStr.systemErr;
+				break;
+			case 7://有其他升级程序正在运行
+				noteStr = errStr.upgradeUnderway;
+				break;
+			case 8://校验信息获取失败
+				noteStr = errStr.checkInfoFail;
+				break;
+			default:
+				noteStr = errStr.unknownErr + status + code;
+				break;
+			}
+		}else{
+			noteStr = errStr.unknownErr + status + code;
+		}
+
+		showNote(noteStr);
+	}
+})();
+</script>
+<style type="text/css">
+	div.no-bottom-line{
+		border-bottom-width:0;
+	}
+	h1.head-title{
+		color:#FFF;
+		border-bottom:0;
+	}
+	a.head-btn-l{
+		color:#FFF;
+	}
+	.state-init{
+		background-color:#2DAAAE !important;
+	}
+	.state-ok{
+		background-color:#2DAAAE !important;
+	}
+	.state-warn{
+		background-color:#EE5859 !important;
+	}
+	div.running-con{
+		position:relative;
+		overflow:hidden;
+		height:8.361rem;
+		margin-bottom:0.5rem;
+	}
+	div.running-con div.outer-circle{
+		position:relative;
+		width:5.25rem;
+		height:5.25rem;
+		border-color:rgba(255, 255, 255, 0.25);
+		margin:1rem auto;
+	}
+	div.middle-circle{
+		position:absolute;
+		top:0;
+		bottom:0;
+		right:0;
+		left:0;
+		width:4.72rem;
+		height:4.72rem;
+		margin:auto;
+		border-radius:50%;
+		background-size:contain;
+		text-align:center;
+	}
+	input.start{
+		position:absolute;
+		bottom:0.35rem;
+		left:0;
+		right:0;
+		margin:auto;
+		color:#FFF;
+		background-color:transparent;
+		font-size:0.4rem;
+		width:100%;
+		border-width:0;
+	}
+	div.state-init div.middle-circle{
+		background-color:#30ADB2;
+		background-image:url(/luci-static/images/upgrade_rocket.png?_=20170809165512);
+	}
+	div.state-ok div.middle-circle{
+		background-color:#30ADB2;
+		background-image:url(/luci-static/images/upgrade_rocket.png?_=20170809165512);
+	}
+	div.state-warn div.middle-circle{
+		background-color:#F06261;
+		background-image:url(/luci-static/images/router-white.png?_=20170809165512);
+	}
+	div.running-con i.circle{
+		background-color:#FFF;
+	}
+	#Status{
+		font-size:0.425rem;
+		color:#FFF;
+		text-align:center;
+	}
+	div.detail-con{
+		margin:0.5rem;
+	}
+	p.detail{
+		color:#585858;
+		font-size:0.4rem;
+	}
+	#ManualUpgrade p.detail{
+		margin-left:1.75rem;
+	}
+	i.dog{
+		display:inline-block;
+		position:absolute;
+		width:1.5rem;
+		height:1.5rem;
+		background-image:url(/luci-static/images/dog.png?_=20170809165512);
+		background-repeat:no-repeat;
+		background-size:contain;
+	}
+</style>
+<%
+	local para = {
+		device = {info = {}}
+	}
+
+	local result = tpl_get_data(para)
+	local data = result[K_MODULE].device.info
+-%>
+<div class="head-con no-bottom-line state-init">
+	<a href="javascript:history.go(-1);" class="head-btn-l"><i class="head-btn icon icon_back"></i></a>
+	<h1 class="head-title">{%label.sysUpgrade%}</h1>
+</div>
+<div class="set-con below-head">
+	<div class="running-con state-init" id="CircleCon">
+		<div class="outer-circle">
+			<div id="Check" class="middle-circle">
+				<input type="button" class="start" value="{%btn.checkUpdate%}" />
+			</div>
+			<div class="inside-circle hidden"><i class="circle"></i></div>
+		</div>
+		<p id="Status"></p>
+	</div>
+	<div id="DetailCon" class="hidden">
+		<div class="detail-con">
+			<p class="detail"><span>{%label.curSwVer%}</span><span><%=data.sw_ver%></span></p>
+			<p class="detail"><span>{%label.newSwVer%}</span><span id="NewSwVer"></span></p>
+			<p class="detail">{%label.upgradeLog%}</p>
+			<p class="detail" id="NewSwLog"></p>
+		</div>
+		<div class="btn-con">
+			<input id="Upgrade" class="btn" type="button" value="{%btn.upgrade%}" />
+		</div>
+	</div>
+	<div id="ManualUpgrade" class="detail-con hidden">
+		<i class="dog"></i>
+		<p class="detail">{%label.loginPcUpgrade%}</p>
+		<p class="detail">{%label.lanWebSite%}</p>
+	</div>
+	<div class="err-note hidden">
+		<i class="err-icon icon_remind_line"></i>
+		<p class="note-str"></p>
+	</div>
+</div>

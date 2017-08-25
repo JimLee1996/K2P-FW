@@ -1,0 +1,8 @@
+#!/bin/sh
+if [ "$EVENT" = "inet_link" ]; then
+	if [ "$ACTION" = "up" ]; then
+		logger "inet up!"
+	elif [ "$ACTION" = "down" ]; then
+		logger "inet down!"
+	fi
+fi

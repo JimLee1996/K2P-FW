@@ -1,0 +1,177 @@
+<script type="text/javascript">
+(function(){
+	<%
+		local para = {
+			firewall = {remote_manager = {}}
+		}
+
+		local data = tpl_get_data(para, true)
+	-%>
+	var remoteInfo = <%=data%>;
+
+	function init(result){
+		var errNo = result[ERR_CODE];
+		var ret;
+		if (E_NONE == errNo){
+			ret = result[K_MODULE];
+		}else{
+			console.log(result);
+			return;
+		}
+
+		var remote = ret.firewall.remote_manager;
+		initSwitch("RemoteSwitch", remote.enable, function(state){
+			if (1 == state){
+				$("#Param").show();
+			}else{
+				$("#Param").hide();
+			}
+
+			closeNote();
+		});
+		$("#RemotePort").val(remote.port);
+		$("#RemoteIp").val(remote.ip);
+	}
+
+	init(remoteInfo);
+
+	function errHandle(errNo)
+	{
+		var noteStr = "";
+
+		switch (errNo)
+		{
+		case E_NONE:// 没有错误
+			return false;
+		case E_INVNET:// 非法网段
+			noteStr = errStr.ipAddrNetErr;
+			break;
+		case E_INVIP:// IP地址不正确
+			noteStr = errStr.ipAddrErr;
+			break;
+		case E_INVIPFMT:// IP地址格式错误
+			noteStr = errStr.ipAddrFmtErr;
+			break;
+		case E_INVGROUPIP:// 组播的IP地址
+			noteStr = errStr.ipAddrGroupErr;
+			break;
+		case E_INVLOOPIP:// 回环的IP地址
+			noteStr = errStr.ipAddrLoopErr;
+			break;
+		case E_RMTENABLE:// 开关错误，状态仅支持开关
+			noteStr = errStr.rmtEnableErr;
+			break;
+		case E_RMTIPBLANK:// IP不能为空
+			noteStr = errStr.ipIsEmpty;
+			break;
+		case E_INVRMTIP:// IP非法
+			noteStr = errStr.ipInvalid;
+			break;
+		case E_INVRMTLANIP:// IP不能与局域网在同一网段
+			noteStr = errStr.mgtIpEqLanIp;
+			break;
+		case E_RMTPORTBLANK:// 端口不能为空
+			noteStr = errStr.remotePortIsEmpty;
+			break;
+		case E_INVRMTPORT:// 端口非法
+			noteStr = errStr.remotePortInvalid;
+			break;
+		case E_INVRMTPFDPORT:// 端口与端口转发端口冲突
+			noteStr = errStr.remotePortConflict;
+			break;
+		default:
+			noteStr = errStr.invRequestFail;
+			break;
+		}
+
+		showNote(noteStr);
+
+		return true;
+	}
+
+	function checkItems(ip, port) {
+		if ("" == port){
+			return E_RMTPORTBLANK;
+		}
+
+		if(!checkNumRange(port, 65535, 1)){
+			return E_INVRMTPORT;
+		}
+
+		if ("" == ip){
+			return E_RMTIPBLANK;
+		}
+
+		if ("255.255.255.255" == ip){
+			return E_NONE;
+		}
+
+		if (E_NONE != checkIp(ip)){
+			return E_INVRMTIP;
+		}
+
+		return E_NONE;
+	}
+
+	$("#Save").click(function(){
+		var data = {};
+		var para = {};
+		para.firewall = {};
+		para.firewall.remote_manager = data;
+
+		data.enable = $("#RemoteSwitch").attr("data-value");
+		if (data.enable == 1){
+			data.ip = $("#RemoteIp").val();
+			data.port = $("#RemotePort").val();
+			if (errHandle(checkItems(data.ip, data.port))){
+				return;
+			}
+		}
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			var code = ret[ERR_CODE];
+
+			$.setTimeout(function(){
+				closeLoading();
+				errHandle(code);
+			},3000);
+		});
+	});
+})();
+</script>
+<div class="head-con">
+	<a href="javascript:history.go(-1);" class="head-btn-l"><i class="head-btn icon icon_back"></i></a>
+	<h1 class="head-title">{%label.remoteMng%}</h1>
+</div>
+<div class="set-con below-head">
+	<ul class="blank-bg"></ul>
+	<ul class="set-con">
+		<label class="desc-lbl">{%label.remoteMng%}</label>
+		<span id="RemoteSwitch" class="switch">
+			<i class="switch-circle"></i>
+		</span>
+	</ul>
+	<div id="Param" class="hidden">
+		<ul class="set-con">
+			<label class="desc-lbl mng-prt">{%label.remoteMngPrt%}</label>
+			<li class="text-con">
+				<input id="RemotePort" class="text hover" maxLength="5" value="" />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<label class="desc-lbl">{%label.remoteMngIp%}</label>
+			<li class="text-con">
+				<input id="RemoteIp" class="text hover" maxLength="15" value="" />
+			</li>
+		</ul>
+	</div>
+	<ul class="blank-bg"></ul>
+	<div class="err-note hidden">
+		<i class="err-icon icon_remind_line"></i>
+		<p class="note-str"></p>
+	</div>
+	<div class="btn-con">
+		<input id="Save" class="btn" type="button" value="{%btn.save%}" />
+	</div>
+</div>

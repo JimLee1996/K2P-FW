@@ -1,0 +1,1 @@
+OPTIONS="-C PhiRouter -k -T 60 -I br-lan -N 5 -L 10.0.1.1 -R 10.0.1.2"

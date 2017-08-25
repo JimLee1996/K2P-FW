@@ -1,0 +1,37 @@
+#!/bin/sh
+. /lib/functions.sh
+
+stop() {
+	killall wpspinproc >/dev/null 2>/dev/null
+}
+
+start() {
+		stop
+		iface0='ifname=ra0'
+		iface0=`uci show wireless | grep ${iface0}`
+		iface0=${iface0#*.}
+		iface0=${iface0%%.*}
+ 
+		iface1='ifname=rai0'
+		iface1=`uci show wireless | grep ${iface1}`
+		iface1=${iface1#*.}
+		iface1=${iface1%%.*}
+
+		wifi_enable_2g=`uci get wireless.${iface0}.disabled`
+		wifi_enable_5g=`uci get wireless.${iface1}.disabled`
+
+		config_load wps_config
+		config_get_bool wps_enable wps_para wps_enable 0
+
+		if [ "$wps_enable" = "1" -a "$wifi_enable_2g" = "0" ]; then
+			wps_manage ra0 register on &
+		fi
+
+		if [ "$wps_enable" = "1" -a "$wifi_enable_5g" = "0" ]; then
+			wps_manage rai0 register on &
+		fi
+}
+
+case "$1" in
+    start) start;;
+esac

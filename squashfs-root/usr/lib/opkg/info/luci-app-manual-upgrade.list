@@ -1,0 +1,3 @@
+/www/luci-static/images/app-icon/upload.png
+/usr/lib/lua/luci/view/pc/manualUpgrade.htm
+/usr/lib/lua/luci/controller/admin/manual_upgrade.lua

@@ -1,0 +1,8 @@
+Package: nvram
+Version: 1
+Depends: libc, libnvram
+Source: package/ramips/applications/nvram
+Section: opt
+Architecture: ramips_1004kc
+Installed-Size: 2037
+Description:  unknown

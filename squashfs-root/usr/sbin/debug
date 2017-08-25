@@ -1,0 +1,17 @@
+#!/bin/sh
+
+if [ $1 == "tnat" ]; then
+  uci set tnat.appmgt.log='1'
+  uci commit
+  killall ip_monitor
+  ip_monitor &
+  killall upnpctl
+  upnpctl &
+  killall http_event_inform
+  http_event_inform &
+fi
+
+if [ $1 == "clear" ]; then
+  uci set tnat.appmgt.log='0'
+  uci commit
+fi

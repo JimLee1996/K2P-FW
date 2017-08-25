@@ -1,0 +1,625 @@
+<style type="text/css">
+	div.head-con{
+		border-bottom-width:0;
+	}
+	div.wan-type-img{
+		position:relative;
+		background-color:#F8F8F8;
+		padding:0.222rem 0 0.1483rem;
+		text-align:center;
+		overflow:hidden;
+	}
+	i.router{
+		display:inline-block;
+		background:url(/luci-static/images/network.png?_=20170809165512) no-repeat;
+		background-size:contain;
+		width:5rem;
+		height:4rem;
+	}
+	i.break-icon{
+		color:#F13F3F;
+		position:absolute;
+		left:6.6rem;
+		top:0.6rem;
+		background-color:#F8F8F8;
+		font-size:0.8rem;
+	}
+	#Detect{
+		background-color:#1499E6;
+	}
+	#WanPppoeSet{
+		display:none;
+	}
+	#WanStaticSet{
+		display:none;
+	}
+	div.wan-sta{
+		margin-left:0.25rem;
+	}
+	i.wan-sta-icon{
+		display:inline-block;
+		font-size:0.8rem;
+		vertical-align:middle;
+		text-indent:0.35rem;
+	}
+	i.icon_remind_line{
+		color:#F34947;
+	}
+	i.icon_select_on{
+		color:#0BCD1E;
+	}
+	p.status-detail{
+		font-size:0.5rem;
+		width:70%;
+		display:inline-block;
+		font-size:0.42rem;
+		vertical-align:middle;
+	}
+	#Retry{
+		width:88%;
+	}
+</style>
+<script type="text/javascript">
+(function(){
+	<%
+		local para = {network = {wan = {}, static = {}, dhcp = {}, pppoe = {}}}
+
+		local result = tpl_get_data(para, true)
+	-%>
+
+	var result = <%=result%>;
+	var wan = result[K_MODULE].network.wan;
+	var static = result[K_MODULE].network.static;
+	var dhcp = result[K_MODULE].network.dhcp;
+	var pppoe = result[K_MODULE].network.pppoe;
+	var curWanType = wan.protocol;
+	var statusHd = null;
+	var currentState = stateman.current.name;
+
+	var WAN_TYPE_DHCP = "dhcp",
+		WAN_TYPE_PPPoE = "pppoe",
+		WAN_TYPE_STATIC_IP = "static";
+
+	var WanType = [{name:label.wanDHCP, value:WAN_TYPE_DHCP},
+				   {name:label.wanPPPoE, value:WAN_TYPE_PPPoE},
+				   {name:label.wanStatic, value:WAN_TYPE_STATIC_IP}
+				   ];
+
+	initSelect("WanType", WanType, curWanType, function(){
+		var nowSelect = $("#WanType").attr("data-value");
+
+		$(".err-note").hide();
+		setWantype(nowSelect);
+	});
+
+	setWantype(curWanType);
+
+	function initPppoe(){
+		var PppoeUser = pppoe.username;
+		var PppoePwd = pppoe.password;
+
+		$("#PppoeUser").val(PppoeUser);
+		$("#PppoePwd").val(PppoePwd);
+	}
+
+	function initStaticIp(){
+		var ipVal = static.ip;
+		var maskVal = static.netmask;
+		var gwVal = static.gateway;
+		var primDns = static.dns_pri;
+		var secDns = static.dns_sec;
+
+		$("#WanIpaddr").val(ipVal);
+		$("#WanMask").val(maskVal);
+		$("#WanGw").val(gwVal);
+		$("#PrimDns").val(primDns);
+		$("#SecDns").val(secDns);
+	}
+
+	function setWantype(wanType){
+		if(wanType == 'dhcp'){
+			$("span.select-value").text(label.wanDHCP);
+			$("div.wan-type-img").show();
+			$("#WanPppoeSet").hide();
+			$("#WanStaticSet").hide();
+			$("#WanType").attr("data-value","dhcp");
+		}else if(wanType == 'pppoe'){
+			$("span.select-value").text(label.wanPPPoE);
+			$("div.wan-type-img").show();
+			$("#WanPppoeSet").show();
+			$("#WanStaticSet").hide();
+			$("#WanType").attr("data-value","pppoe");
+			initPppoe();
+		}else{
+			$("span.select-value").text(label.wanStatic);
+			$("div.wan-type-img").hide();
+			$("#WanPppoeSet").hide();
+			$("#WanStaticSet").show();
+			$("#WanType").attr("data-value","static");
+			initStaticIp();
+		}
+	}
+
+	function showWanState(state, stateStr){
+		if (state){// wan connected
+			$("i.wan-sta-icon").removeClass("icon_remind_line").addClass("icon_select_on");
+			$("p.status-detail").css("color","#575757").text(stateStr);
+			$("i.break-icon").hide();
+		}else{// wan disconnected
+			$("i.wan-sta-icon").removeClass("icon_select_on").addClass("icon_remind_line");
+			$("p.status-detail").css("color","#F34947").text(stateStr);
+			$("i.break-icon").show();
+		}
+	}
+
+	//上网状态检测
+	function refreshWanState(){
+		var para = {
+			network:{wan_status:null}
+		};
+
+		apiGet(para, function(data){
+			if (currentState != stateman.current.name){
+				return;
+			}
+
+			var wanStatus = data[K_MODULE]["network"]["wan_status"];
+			var code = wanStatus["status_code"];
+			if ("1" == code){ // WAN口未连接
+				showWanState(false, label.wanError);
+			}else{
+				showWanState(true, label.wanOk);
+			}
+
+			clearTimeout(statusHd);
+			statusHd = $.setTimeout(refreshWanState, 3000);
+		});
+	}
+
+	//上网方式检测
+	function detectWanType(){
+		var para = {
+			network:{wan_detection:{action:"start"}}
+		};
+
+		apiGet(para);
+	}
+
+	function getWanDetectionState(){
+		var para = {
+			network:{wan_detection:{action:"get"}}
+		};
+
+		apiGet(para, function(data){
+			var info = data[K_MODULE]["network"]["wan_detection"];
+
+			var status = info.running_status;
+			if ("2" == status){ // 上网方式检测完成
+				if ("1" !== info.status_code){ // wan口连接，检测成功
+					var wanType = info.protocol;
+					setWantype(wanType);
+				}
+
+				closeLoading();
+			}else{
+				$.setTimeout(getWanDetectionState, 2000);
+			}
+		});
+	}
+
+	function getWanType(){
+		showLoading(label.wanChecking);
+		detectWanType();// 通知后台进行上网方式检测
+		$.setTimeout(getWanDetectionState, 2000);// 轮询上网方式检测结果
+	}
+
+	$("#Detect").click(function(){
+		$(".err-note").hide();
+		getWanType();
+	});
+
+	refreshWanState();
+
+	/* err_code handle */
+	function errHandle(errNo)
+	{
+		var noteStr = "";
+
+		switch (errNo)
+		{
+		case E_NONE://没有错误
+			return false;
+		case E_INVARG://参数错误
+			noteStr = errStr.argsInvalid;
+			break;
+		case E_NETMASKNOTMATCH://网络号与掩码不匹配
+			noteStr = errStr.ipAddrMaskNotMatch;
+			break;
+		case E_NETLANSAME://网络号处于LAN口IP网段
+			noteStr = errStr.netLanSame;
+			break;
+		case E_PPPOENAMEBLANK://PPPoE账号不能为空
+			noteStr = errStr.usrNameEmpty;
+			break;
+		case E_PPPOENAMELEN://PPPoE账号长度非法
+			noteStr = errStr.nameLenIllegal;
+			break;
+		case E_PPPOENAMEILLEGAL://PPPoE账号包含非法字符
+			noteStr = errStr.usrNameInclSpeChar;
+			break;
+		case E_PPPOEPWDBLANK://PPPoE密码不能为空
+			noteStr = errStr.pwdEmpty;
+			break;
+		case E_PPPOEPWDLEN://PPPoE密码长度非法
+			noteStr = errStr.pwdLenIllegal;
+			break;
+		case E_PPPOEPWDILLEGAL://PPPoE密码包含非法字符
+			noteStr = errStr.pwdInclSpeChar;
+			break;
+		case E_STATICIPBLANK: // 静态IP地址为空
+			noteStr = errStr.ipIsEmpty;
+			break;
+		case E_STATICIPILLEGAL://静态IP地址非法
+			noteStr = errStr.ipAddrErr;
+			break;
+		case E_STATICMASKBLANK: // 静态子网掩码为空
+			noteStr = errStr.maskEmpty;
+			break;
+		case E_STATICMASKILLEGAL://静态子网掩码非法
+			noteStr = errStr.maskErr;
+			break;
+		case E_STATICGWBLANK: // 静态网关为空
+			noteStr = errStr.gwIsEmpty;
+			break;
+		case E_STATICGWILLEGAL://静态网关非法
+			noteStr = errStr.gatewayErr;
+			break;
+		case E_STATICGWEQSTATICIP://默认网关与IP地址不能相同
+			noteStr = errStr.gatewayEqIp;
+			break;
+		case E_FDNSIPBLANK://首选DNS地址不能为空
+			noteStr = errStr.primDnsIsEmpty;
+			break;
+		case E_INVFDNSIP://非法首选DNS地址
+			noteStr = errStr.primDnsErr;
+			break;
+		case E_INVSDNSIP://非法备选DNS地址
+			noteStr = errStr.secDnsErr;
+			break;
+		case E_FDNSEQSDNS://备用DNS与默认DNS相同
+			noteStr = errStr.secDnsEqPriDns;
+			break;
+		case E_INVWANMODE://上网模式值非法，仅支持DHCP,PPPoE,静态
+		default:
+			noteStr = errStr.unknownErr + errNo;
+			break;
+		}
+
+		showNote(noteStr);
+
+		return true;
+	}
+
+	// static IP set
+	function saveStatic(){
+		var wanConf = {};
+		var data = {};
+		var para = {};
+
+		para.network = {};
+		para.network.wan = wanConf;
+		wanConf.protocol = 'static';
+		para.network.static = data;
+		data.ip = $("#WanIpaddr").val();
+		data.netmask = $("#WanMask").val();
+		data.gateway = $("#WanGw").val();
+		data.dns_mode = "1";
+		data.dns_pri = $("#PrimDns").val();
+		data.dns_sec = $("#SecDns").val();
+
+		if (errHandle(checkNetworkIp(data.ip))){
+			return;
+		}
+
+		if (errHandle(checkNetworkMask(data.netmask))){
+			return;
+		}
+
+		if (errHandle(checkNetworkGateway(data.gateway, data.ip, data.netmask))){
+			return;
+		}
+
+		if (errHandle(checkNetworkDns(data.dns_pri, data.dns_sec))){
+			return;
+		}
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			var code = ret[ERR_CODE];
+			if (E_NONE == code){
+				var time = max(ret[K_MODULE].network.wan.wait_time, ret[K_MODULE].network.static.wait_time);
+				$.setTimeout(function(){
+					closeLoading();
+
+					clearTimeout(statusHd);
+					statusHd = $.setTimeout(refreshWanState, 3000);
+				}, time * 1000);
+			}else{
+				errHandle(code);
+				closeLoading();
+			}
+		});
+	}
+
+	// DHCP set
+	function saveDhcp(){
+		var wanConf = {};
+		var data = {};
+		var para = {};
+
+		para.network = {};
+		para.network.wan = wanConf;
+		wanConf.protocol = 'dhcp';
+		para.network.dhcp = data;
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			var code = ret[ERR_CODE];
+			if (E_NONE == code){
+				var time = max(ret[K_MODULE].network.wan.wait_time, ret[K_MODULE].network.dhcp.wait_time);
+				$.setTimeout(function(){
+					closeLoading();
+
+					clearTimeout(statusHd);
+					statusHd = $.setTimeout(refreshWanState, 3000);
+				}, time * 1000);
+			}else{
+				errHandle(code);
+				closeLoading();
+			}
+		});
+	}
+
+	// PPPoE set
+	function savePppoe(){
+		var wanConf = {};
+		var data = {};
+		var para = {};
+
+		para.network = {};
+		para.network.wan = wanConf;
+		wanConf.protocol = 'pppoe';
+		para.network.pppoe = data;
+		data.username = $("#PppoeUser").val();
+		data.password = $("#PppoePwd").val();
+
+		if (errHandle(checkUserName(data.username))){
+			return;
+		}
+
+		if (errHandle(checkPassWord(data.password))){
+			return;
+		}
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			var code = ret[ERR_CODE];
+			if (E_NONE == code){
+				var time = max(ret[K_MODULE].network.wan.wait_time, ret[K_MODULE].network.pppoe.wait_time);
+				$.setTimeout(function(){
+					closeLoading();
+
+					clearTimeout(statusHd);
+					statusHd = $.setTimeout(refreshWanState, 3000);
+				}, time * 1000);
+			}else{
+				errHandle(code);
+				closeLoading();
+			}
+		});
+	}
+
+	function sendConfDatas(){
+		var selStr = $("#WanType").attr("data-value");
+
+		switch(selStr){
+		case WAN_TYPE_DHCP:
+			saveDhcp();
+			break;
+		case WAN_TYPE_PPPoE:
+			savePppoe();
+			break;
+		case WAN_TYPE_STATIC_IP:
+			saveStatic();
+			break;
+		default:
+			break;
+		}
+	}
+
+	$("#SaveConf").click(sendConfDatas);
+
+	function checkNetworkIp(ip){
+		if (ip.length == 0){
+			return E_STATICIPBLANK;
+		}
+
+		if (checkIp(ip) != E_NONE){
+			return E_STATICIPILLEGAL;
+		}
+
+		return E_NONE;
+	}
+
+	function checkNetworkMask(mask){
+		if (mask.length == 0){
+			return E_STATICMASKBLANK;
+		}
+
+		if (checkMask(mask) != E_NONE){
+			return E_STATICMASKILLEGAL;
+		}
+
+		return E_NONE;
+	}
+
+	function checkNetworkGateway(gateway, ip, mask){
+		if (gateway.length == 0){
+			return E_STATICGWBLANK;
+		}
+
+		if (checkIp(gateway) != E_NONE){
+			return E_STATICGWILLEGAL;
+		}
+
+		if (!checkSameNetwork(gateway, ip, mask)){
+			return E_STATICGWILLEGAL;
+		}
+
+		if (gateway == ip){
+			return E_STATICGWEQSTATICIP;
+		}
+
+		return E_NONE;
+	}
+
+	function checkNetworkDns(primDns, secDns){
+		if (primDns.length == 0){
+			return E_FDNSIPBLANK;
+		}
+
+		if (checkPrimDns(primDns) != E_NONE){
+			return E_INVFDNSIP;
+		}
+
+		if (checkSeDns(secDns) != E_NONE){
+			return E_INVSDNSIP;
+		}
+
+		if (primDns == secDns){
+			return E_FDNSEQSDNS;
+		}
+
+		return E_NONE;
+	}
+
+	function checkUserName(username){
+		if (username == ""){
+			return E_PPPOENAMEBLANK;
+		}
+
+		if (checkStrLen(username, 32, 1) != E_NONE){
+			return E_PPPOENAMELEN;
+		}
+
+		return E_NONE;
+	}
+
+	function checkPassWord(password){
+		if (password == ""){
+			return E_PPPOEPWDBLANK;
+		}
+
+		if (checkStrLen(password, 32, 1) != E_NONE){
+			return E_PPPOEPWDLEN;
+		}
+
+		if (!checkIllegalChar(password)){
+			return E_PPPOEPWDILLEGAL;
+		}
+
+		return E_NONE;
+	}
+
+	function checkServer(server){
+		if (server.length == 0){
+			return E_VPN_SERVER_BLANK;
+		}
+
+		if (checkIp(server) != E_NONE && !checkDomain(server)){
+			return E_VPN_SERVER_ILLEGAL;
+		}
+
+		return E_NONE;
+	}
+})();
+</script>
+<div class="head-con">
+	<a href="javascript:history.go(-1);" class="head-btn-l"><i class="head-btn icon icon_back"></i></a>
+	<h1 class="head-title">{%label.networkset%}</h1>
+</div>
+<div class="set-con below-head">
+	<div class="wan-type-img">
+		<i class="router"></i>
+		<i class="break-icon icon_error hidden"></i>
+	</div>
+	<div id="WanSta" class="wan-sta">
+		<i class="wan-sta-icon"></i>
+		<p class="status-detail"></p>
+	</div>
+	<div class="btn-con detect">
+		<input id="Detect" class="btn" type="button" value="{%btn.autoDetect%}" />
+	</div>
+	<ul class="set-con">
+		<label class="desc-lbl">{%label.wanType%}</label>
+		<li class="text-con">
+			<span id="WanType" class="select" data-value="0">
+				<span class="select-value">{%label.wanDHCP%}</span>
+				<i class="tip icon_list-expansion"></i>
+			</span>
+		</li>
+	</ul>
+	<div id="WanPppoeSet">
+		<ul class="set-con">
+			<label class="desc-lbl">{%label.pppoeUser%}</label>
+			<li class="text-con">
+				<input id="PppoeUser" class="text hover" maxLength="32" value="" />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<label class="desc-lbl">{%label.pppoePasswd%}</label>
+			<li class="text-con">
+				<input id="PppoePwd" class="text hover" maxLength="32" value="" /><i class="tip icon-eye" data-value="0"></i>
+			</li>
+		</ul>
+	</div>
+	<div id="WanStaticSet">
+		<ul class="set-con">
+			<label class="desc-lbl">{%label.ipaddr%}</label>
+			<li class="text-con">
+				<input id="WanIpaddr" class="text hover" maxLength="15" value="0.0.0.0" />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<label class="desc-lbl">{%label.netmask%}</label>
+			<li class="text-con">
+				<input id="WanMask" class="text hover" maxLength="15" value="0.0.0.0" />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<label class="desc-lbl">{%label.gateway%}</label>
+			<li class="text-con">
+				<input id="WanGw" class="text hover" maxLength="15" value="0.0.0.0" />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<label class="desc-lbl">{%label.firstDns%}</label>
+			<li class="text-con">
+				<input id="PrimDns" class="text hover" maxLength="15" value="0.0.0.0" />
+			</li>
+		</ul>
+		<ul class="set-con">
+			<label class="desc-lbl">{%label.secDns%}</label>
+			<li class="text-con">
+				<input id="SecDns" class="text hover" maxLength="15" value="0.0.0.0" />
+			</li>
+		</ul>
+	</div>
+	<div class="err-note hidden">
+		<i class="err-icon icon_remind_line"></i>
+		<p class="note-str"></p>
+	</div>
+	<div class="btn-con">
+		<input id="SaveConf" class="btn" type="button" value="{%btn.save%}" />
+	</div>
+</div>

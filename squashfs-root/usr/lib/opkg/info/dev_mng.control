@@ -1,0 +1,8 @@
+Package: dev_mng
+Version: 1
+Depends: libc, libubox, libuci, libjson-c, phicomm_libs
+Source: package/phicomm/dev_mng
+Section: Phicomm Properties
+Architecture: ramips_1004kc
+Installed-Size: 18764
+Description:  unknown

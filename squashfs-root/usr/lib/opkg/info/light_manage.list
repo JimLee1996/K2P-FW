@@ -1,0 +1,5 @@
+/etc/config/light_manage
+/usr/bin/light_manage
+/etc/hotplug.d/iface/26-light
+/etc/init.d/light_manage
+/etc/nvram2uci/light_manage

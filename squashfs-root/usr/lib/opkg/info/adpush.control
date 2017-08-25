@@ -1,0 +1,8 @@
+Package: adpush
+Version: 1
+Depends: libc, ipset, libcurl, libjson-c, libpthread, libuci, libopenssl
+Source: package/phicomm/adpush
+Section: Phicomm Properties
+Architecture: ramips_1004kc
+Installed-Size: 9792
+Description:  unknown

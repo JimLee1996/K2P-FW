@@ -1,0 +1,94 @@
+﻿<?xml version="1.0"?>
+<root>
+	<class type="1">
+		//门户网站
+		<item url="http://www.qq.com"/>
+		<item url="http://www.sina.com.cn"/>
+		<item url="http://www.sohu.com"/>
+		<item url="http://www.163.com"/>
+		<item url="http://www.ifeng.com"/>
+		<item url="http://www.xinhuanet.com"/>
+		//视频网站
+		<item url="http://www.youku.com"/>
+		<item url="http://www.tudou.com"/>
+		<item url="http://www.iqiyi.com"/>
+		<item url="http://www.le.com"/>
+		<item url="http://www.mgtv.com"/>
+		<item url="http://www.kankan.com"/>
+		<item url="http://v.baidu.com"/>
+		<item url="http://v.hao123.com"/>
+		<item url="http://v.qq.com"/>
+		<item url="http://www.fun.tv"/>
+		//电商网站
+		<item url="http://www.jd.com"/>
+		<item url="http://www.suning.com"/>
+		<item url="http://www.dangdang.com"/>
+		<item url="http://www.meituan.com"/>
+		//直播网站
+		<item url="http://www.yy.com"/>
+		<item url="http://www.huya.com"/>
+		<item url="http://www.douyu.com"/>
+		<item url="http://www.panda.tv"/>
+		<item url="http://www.longzhu.com"/>
+		<item url="http://www.zhanqi.tv"/>
+		<item url="http://www.huajiao.com"/>
+		<item url="http://www.kktv5.com"/>
+		<item url="http://www.fengyunlive.com"/>
+		<item url="http://www.zhangyu.tv"/>
+		<item url="http://www.6.cn"/>
+		<item url="http://cc.163.com"/>
+		<item url="http://www.imeme.tv"/>
+		//其他
+		<item url="http://www.360.com"/>
+		<item url="http://www.360doc.com/index.html"/>
+		<item url="http://www.kugou.com"/>
+		<item url="http://www.verycd.com"/>
+		<item url="http://www.jiayuan.com"/>
+		<item url="http://pomoho.com"/>
+	</class>
+	<class type="3">
+		//门户网站
+		<item uploadurl="http://www.qq.com"/>
+		<item uploadurl="http://www.sohu.com"/>
+		<item uploadurl="http://www.ifeng.com"/>
+		<item uploadurl="http://www.xinhuanet.com"/>
+		//视频网站
+		<item uploadurl="http://v.youku.com"/>
+		<item uploadurl="http://www.tudou.com"/>
+		<item uploadurl="http://www.iqiyi.com"/>
+		<item uploadurl="http://www.le.com"/>
+		<item uploadurl="http://www.kankan.com"/>
+		<item uploadurl="http://v.baidu.com"/>
+		<item uploadurl="http://v.hao123.com"/>
+		<item uploadurl="http://v.qq.com"/>
+		<item uploadurl="http://tv.sohu.com"/>
+		<item uploadurl="http://www.fun.tv"/>
+		//电商网站
+		<item uploadurl="http://www.jd.com"/>
+		<item uploadurl="http://www.suning.com"/>
+		<item uploadurl="http://www.yhd.com"/>
+		<item uploadurl="http://www.dangdang.com"/>
+		<item uploadurl="http://www.vip.com"/>
+		<item uploadurl="http://www.jumei.com"/>
+		//直播网站
+		<item uploadurl="http://www.yy.com"/>
+		<item uploadurl="http://www.huya.com"/>
+		<item uploadurl="http://www.douyu.com"/>
+		<item uploadurl="http://www.panda.tv"/>
+		<item uploadurl="http://www.longzhu.com"/>
+		<item uploadurl="http://www.huajiao.com"/>
+		<item uploadurl="http://www.kktv5.com"/>
+		<item uploadurl="http://www.6.cn"/>
+		<item uploadurl="http://cc.163.com"/>
+		<item uploadurl="http://www.imeme.tv"/>
+		//其他网站
+		<item uploadurl="http://www.so.com"/>
+		<item uploadurl="http://www.360.com"/>
+		<item uploadurl="http://www.360doc.com"/>
+		<item uploadurl="http://www.kugou.com"/>
+		<item uploadurl="http://www.verycd.com"/>
+		<item uploadurl="http://pomoho.com"/>
+		<item uploadurl="http://www.speedtest.cn"/>
+		<item uploadurl="http://www.speedtest.net"/>
+	</class>
+</root>

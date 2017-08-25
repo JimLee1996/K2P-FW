@@ -1,0 +1,9 @@
+Package: lighttpd-mod-cgi
+Version: 1.4.35-2
+Depends: libc, lighttpd
+Source: feeds/packages/net/lighttpd
+Section: net
+Maintainer: W. Michael Petullo <mike@flyn.org>
+Architecture: ramips_1004kc
+Installed-Size: 8892
+Description:  unknown

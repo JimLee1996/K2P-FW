@@ -1,0 +1,64 @@
+config feature time
+	option reboot 120
+	option reset 125
+	option restore 125
+	option online_upgrade 125
+	option manual_upgrade 135
+	option detect_delay 120
+
+config feature app
+	list installed DMZ
+	list installed UPnP
+	list installed signal-power
+	list installed auto-upgrade
+	list installed backup-reset
+	list installed ddns
+	list installed dhcp-server
+	list installed diagnose
+	list installed guest-wifi
+	list installed lan-set
+	list installed manual-upgrade
+	list installed network-set
+	list installed parent-ctrl
+	list installed port-forward
+	list installed remote-manage
+	list installed safe-set
+	list installed system-status
+	list installed wifi-extend
+	list installed light
+	list installed elink
+
+config feature wifi_2g
+	list channel 0
+	list channel 1
+	list channel 2
+	list channel 3
+	list channel 4
+	list channel 5
+	list channel 6
+	list channel 7
+	list channel 8
+	list channel 9
+	list channel 10
+	list channel 11
+	list channel 12
+	list channel 13
+	list band_width 0
+	list band_width 1
+	list band_width 2
+
+config feature wifi_5g
+	list channel 0
+	list channel 36
+	list channel 40
+	list channel 44
+	list channel 48
+	list channel 149
+	list channel 153
+	list channel 157
+	list channel 161
+	list channel 165
+	list band_width 0
+	list band_width 4
+	list band_width 1
+	list band_width 2

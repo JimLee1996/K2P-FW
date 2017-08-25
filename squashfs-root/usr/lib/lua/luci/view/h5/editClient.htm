@@ -1,0 +1,258 @@
+<script type="text/javascript">
+(function(){
+	var param = stateman.current.param;
+	var client = {};
+	for (var k in param){
+		var key = decodeURIComponent(k);
+		var val = decodeURIComponent(param[k]);
+		client[key] = val;
+	}
+
+	var vendor;
+	if(client.brand){
+		vendor = "icon_" + getAlias(client.brand);
+	}else{
+		vendor = "icon_" + getVendor(client.mac);
+	}
+	$("#VendorIcon").addClass(vendor);
+	$("#DeviceName").val(client.name);
+	$("#UpSwitch").attr("data-value", "1");
+	$("#DownSwitch").attr("data-value", "1");
+	$("#MacAddr span").text(client.mac);
+
+	if (client.ip != BROWSER.ip){
+		initSwitch("NetSwitch", client.internet_enable);
+	}
+
+	var upSwitchState = 0;
+	if (0 == client.upload_limit){
+		upSwitchState = 0;
+		$("#UploadSpeed").val("");
+	}else{
+		upSwitchState = 1;
+		$("#UploadSpeed").val(client.upload_limit);
+	}
+
+	initSwitch("UpSwitch", upSwitchState, function(state){
+		if (1 == state){
+			$("#UploadSpeed").val(client.upload_limit).removeAttr("disabled");
+		}else{
+			$("#UploadSpeed").val("").attr("disabled", "disabled");
+		}
+	});
+
+	var downSwitchState = 0;
+	if (0 == client.download_limit){
+		downSwitchState = 0;
+		$("#DownloadSpeed").val("");
+	}else{
+		downSwitchState = 1;
+		$("#DownloadSpeed").val(client.download_limit);
+	}
+
+	initSwitch("DownSwitch", downSwitchState, function(state){
+		if (1 == state){
+			$("#DownloadSpeed").val(client.download_limit).removeAttr("disabled");
+		}else{
+			$("#DownloadSpeed").val("").attr("disabled", "disabled");
+		}
+	});
+
+	if (1 == client.online_status){
+		$("#IpAddr span").text(client.ip);
+		$("#Time span").text(timeTrans(client.online_time));
+	}else{
+		$("#Time").hide();
+		$("#IpAddr").hide();
+	}
+
+	$("#Save").click(function(){
+		var devName = $("#DeviceName").val();
+		var upSpeed = $("#UploadSpeed").val() || "0";
+		var downSpeed = $("#DownloadSpeed").val() || "0";
+
+		closeNote();
+
+		if (0 == devName.length){
+			showNote(errStr.devNameEpty);
+			return;
+		}
+
+		if (getCNStrLen(devName) > 32){
+			showNote(errStr.devNameTooLong);
+			return;
+		}
+
+		if (!checkNum(upSpeed) || !checkNumRange(upSpeed, 4096, 0)){
+			showNote(errStr.upSpeedInv);
+			return;
+		}
+
+		if (!checkNum(downSpeed) || !checkNumRange(downSpeed, 4096, 0)){
+			showNote(errStr.downSpeedInv);
+			return;
+		}
+
+		var data = {};
+		var para = {};
+
+		para.device_manage = {};
+		para.device_manage.client_list = data;
+
+		data.ip = client.ip;
+		data.mac = client.mac;
+		data.name = devName;
+		data.internet_enable = $("#NetSwitch").attr("data-value");
+		data.upload_limit = upSpeed;
+		data.download_limit = downSpeed;
+
+		showLoading(label.saving);
+		apiSet(para, function(ret){
+			$.setTimeout(function(){
+				$("#DeviceName").val(devName);
+				closeLoading();
+			}, 2000);
+		});
+	});
+})();
+</script>
+<style type="text/css">
+	ul.set-con{
+		margin:0 0.45rem 0;
+	}
+	ul.border-line{
+		border-bottom:1px solid #F0F0F0;
+	}
+	label.desc-lbl{
+		width:30% !important;
+		font-size:0.45rem;
+		line-height:1rem;
+	}
+	i.left-icon{
+		color:#FFF;
+		display:inline-block;
+		font-size:0.75rem;
+		line-height:0.75rem;
+		width:0.75rem;
+		height:0.75rem;
+		border-radius:0.1rem;
+		margin-right:0.2rem;
+		vertical-align:middle;
+	}
+	i.verdor-icon{
+		font-size:1rem;
+		left:-0.2rem;
+		position:relative;
+		float:left;
+		margin:0;
+		width:1rem;
+		height:1rem;
+	}
+	span.switch{
+		margin-top:0.15rem;
+	}
+	i.right-switch{
+		float:right;
+		font-size:0.5rem;
+		padding-top:0.25rem;
+		vertical-align:middle;
+	}
+	input.textA{
+		padding:0 0.25rem;
+		color:#575757;
+		font-size:0.45rem;
+		line-height:0.8rem;
+		width:15%;
+		border:0;
+		border-bottom:1px solid #FE9818;
+		border-radius:0;
+		vertical-align:middle;
+		text-align:center;
+	}
+	span.unit{
+		font-size:0.4rem;
+		color:#575757;
+		vertical-align:middle;
+	}
+	ul.detail{
+		position:relative;
+		color:#575757;
+		font-size:0.45rem;
+	}
+	i.detail-icon{
+		position:absolute;
+		left:0.75rem;
+		top:0.15rem;
+		width:0.75rem;
+		height:0.75rem;
+		font-size:0.75rem;
+		border-radius:0.1rem;
+		color:#FFF;
+	}
+	ul.detail p.info{
+		line-height:0.85rem;
+		margin-left:2rem;
+		padding-top:0.125rem;
+	}
+	p.info span{
+		margin-left:0.25em;
+	}
+	i.err-icon{
+		margin-left:1.85rem;
+	}
+</style>
+<div class="head-con">
+	<a href="javascript:history.go(-1);" class="head-btn-l"><i class="head-btn icon icon_back"></i></a>
+	<h1 class="head-title">{%label.editClient%}</h1>
+</div>
+<div class="set-con below-head">
+	<ul class="set-con border-line">
+		<i id="VendorIcon" class="verdor-icon"></i>
+		<label class="desc-lbl">{%label.deviceName%}</label>
+		<input id="DeviceName" class="textA" style="width:50%;" maxLength="32" value="" />
+	</ul>
+	<ul class="set-con">
+		<i class="left-icon icon_net bg-n"></i>
+		<label class="desc-lbl">{%label.internetSet%}</label>
+		<span id="NetSwitch" class="switch" data-value="1">
+			<i class="switch-circle"></i>
+		</span>
+	</ul>
+	<ul class="set-con-title">
+		<label class="title-desc-lbl">{%label.speedLimit%}</label>
+	</ul>
+	<ul class="set-con border-line">
+		<i class="left-icon icon_speed_up bg-g"></i>
+		<label class="desc-lbl">{%label.uploadSpeed%}</label>
+		<input id="UploadSpeed" class="textA" maxLength="4" value="" placeholder="{%label.unlimit%}" />
+		<span class="unit">KB/s</span>
+		<span id="UpSwitch" class="switch" data-value="0">
+			<i class="switch-circle"></i>
+		</span>
+	</ul>
+	<ul class="set-con">
+		<i class="left-icon icon_speed bg-d"></i>
+		<label class="desc-lbl">{%label.downloadSpeed%}</label>
+		<input id="DownloadSpeed" class="textA" maxLength="4" value="" placeholder="{%label.unlimit%}" />
+		<span class="unit">KB/s</span>
+		<span id="DownSwitch" class="switch" data-value="0">
+			<i class="switch-circle"></i>
+		</span>
+	</ul>
+	<ul class="set-con-title">
+		<label class="title-desc-lbl">{%label.detail%}</label>
+	</ul>
+	<ul class="detail">
+		<i class="detail-icon icon_informationsvg bg-a"></i>
+		<p class="info" id="IpAddr">{%label.ipaddr%}{%label.colon%}<span></span></p>
+		<p class="info" id="MacAddr">{%label.macAddr%}{%label.colon%}<span></span></p>
+		<p class="info" id="Time">{%label.hasConnected%}{%label.colon%}<span></span></p>
+	</ul>
+	<div class="err-note hidden">
+		<i class="err-icon icon_remind_line"></i>
+		<p class="note-str"></p>
+	</div>
+	<div class="btn-con">
+		<input id="Save" class="btn" type="button" value="{%btn.save%}" />
+	</div>
+</div>

@@ -1,0 +1,5 @@
+/usr/sbin/regular_check
+/etc/uci-defaults/auto_upgrade
+/etc/config/onekeyupgrade
+/usr/sbin/regular_task
+/usr/sbin/do_upgrade

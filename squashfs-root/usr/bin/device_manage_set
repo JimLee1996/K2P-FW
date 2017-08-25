@@ -1,0 +1,104 @@
+#!/bin/sh
+######################################################################
+# Copyright (C) 2017. Shanghai Feixun Communication Co.,Ltd.
+#
+# DISCREPTION   : 终端管理规则配置命令
+# AUTHOR        : cong.he <cong.he@phicomm.com.cn>
+# CREATED DATE  : 2017-01-12
+# MODIFIED DATE :
+######################################################################
+
+#set -xv
+#set -e
+
+. /usr/lib/device_manage_set.sh
+
+usage() {
+	echo "Usage:$0 [option] [parameter]"
+	echo "      option     parameter"
+	echo "      mac        ××:××:××:××:××:××:"
+	echo "      rx_rate    0-4096"
+	echo "      tx_rate    0-4096"
+	echo "      block_user 0/1"
+	echo " e.g. $0 mac 00:0C:43:98:40:A8 rx_rate 2048 block_user 1"
+}
+
+if [ $# -lt 4 -o "$1" != "mac" ]; then
+	usage
+	exit 1
+else
+	MAC=$2
+	shift 2
+	section_name=${MAC//:/_}
+	CONFIG="device_manage"
+	TYPE="limit"
+fi
+
+if [ "$TYPE" != "$(uci get $CONFIG.$section_name)" ]; then
+	local if_type="0"
+	if_type="$(uci -c /var/state get base_device.${section_name}.if_type)"
+	uci set $CONFIG.$section_name="$TYPE"
+	uci set $CONFIG.$section_name.mac="$MAC"
+	uci set $CONFIG.$section_name.if_type="$if_type"
+	uci set $CONFIG.$section_name.block_user="0"
+	uci set $CONFIG.$section_name.tx_rate="0"
+	uci set $CONFIG.$section_name.rx_rate="0"
+	uci commit $CONFIG
+fi
+
+until [ -z "$1" -o -z "$2" ]
+do
+	case "$1" in
+	rx_rate)
+		rx_rate=$2
+		rx_rate_old="$(uci get $CONFIG.$section_name.rx_rate)"
+		if [ $rx_rate -ne $rx_rate_old ]; then
+			uci set $CONFIG.$section_name.rx_rate="$rx_rate"
+			ip="$(uci -c /var/state get base_device.${section_name}.ip)"
+			if [ -n $ip ]; then
+				rate_limit_set $ip "dst" $rx_rate $rx_rate_old
+			fi
+		fi
+		uci commit $CONFIG
+		shift
+		;;
+	tx_rate)
+		tx_rate=$2
+		tx_rate_old="$(uci get $CONFIG.$section_name.tx_rate)"
+		if [ $tx_rate -ne $tx_rate_old ]; then
+			uci set $CONFIG.$section_name.tx_rate="$tx_rate"
+			ip="$(uci -c /var/state get base_device.${section_name}.ip)"
+			if [ -n $ip ]; then
+				rate_limit_set $ip "src" $tx_rate $tx_rate_old
+			fi
+		fi
+		uci commit $CONFIG
+		shift
+		;;
+	block_user)
+		block_user=$2
+		block_user_old="$(uci get $CONFIG.$section_name.block_user)"
+		if_type="$(uci get $CONFIG.$section_name.if_type)"
+		if [ $block_user -ne $block_user_old ]; then
+			uci set $CONFIG.$section_name.block_user="$block_user"
+			block_user_set $if_type $block_user $block_user_old
+		fi
+		uci commit $CONFIG
+		shift
+		;;
+	*)
+		echo "device_manage_set: 无效设置: $1!";
+		;;
+	esac
+	shift
+done
+
+if [ "$TYPE" == "$(uci get $CONFIG.$section_name)" ]; then
+	block_user_cur="$(uci get $CONFIG.$section_name.block_user)"
+	tx_rate_cur="$(uci get $CONFIG.$section_name.tx_rate)"
+	rx_rate_cur="$(uci get $CONFIG.$section_name.rx_rate)"
+	if [ $block_user_cur -eq 0 -a  $tx_rate_cur -eq 0 -a $rx_rate_cur -eq 0 ]; then
+		uci delete $CONFIG.$section_name
+	fi
+	uci commit $CONFIG
+fi
