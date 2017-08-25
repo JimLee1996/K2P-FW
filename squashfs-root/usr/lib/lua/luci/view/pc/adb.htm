@@ -1,0 +1,256 @@
+<style type="text/css">
+	ul.switch-bottom{
+		margin-bottom:30px;
+	}
+</style>
+
+<script type="text/javascript">
+(function(){
+	<%-
+		local para = {
+			adb = {config = {}}
+		}
+
+		local result = tpl_get_data(para)
+		local enable = result[K_MODULE].adb.config.enable
+		local mode = result[K_MODULE].adb.config.mode
+		local runmode = result[K_MODULE].adb.config.runmode
+		local httpsmode = result[K_MODULE].adb.config.https
+
+local sys = require "luci.sys"
+local Run_flag=0
+local lazy_time="未知"
+local mver="未知"
+local cert_flag=0
+
+if nixio.fs.access("/www/kp.crt") then
+cert_flag=1
+end
+
+icount=tonumber(sys.exec("ps -w | grep adbyby |grep -v grep| wc -l"))
+if tonumber(icount)>0 then
+icount=tonumber(sys.exec("netstat -nautp | grep adbyby |grep -v grep| wc -l"))
+if tonumber(icount)>0 then
+Run_flag=1
+else
+Run_flag=2
+end
+end
+icount=tonumber(sys.exec("ps -w | grep koolproxy |grep -v grep| wc -l"))
+if tonumber(icount)>0 then
+Run_flag=1
+else
+icount=tonumber(sys.exec("ps -w | grep gen_ca|grep -v grep| wc -l"))
+if tonumber(icount)>0 then
+Run_flag=3
+end
+end
+
+if nixio.fs.access("/tmp/adbyby/bin/data/lazy.txt") then
+time_cmd="awk  'NR==1{print $3\" \"$4}' /tmp/adbyby/bin/data/lazy.txt"
+lazy_time=sys.exec(time_cmd)
+end
+if nixio.fs.access("/tmp/koolproxy/data/rules/koolproxy.txt") then
+time_cmd="cat /tmp/koolproxy/data/rules/koolproxy.txt |grep '\\[rules\\]'|awk '{print $3\" \"$4}'"
+lazy_time=sys.exec(time_cmd)
+end
+
+if nixio.fs.access("/tmp/koolproxy/koolproxy") then
+mver=sys.exec("/tmp/koolproxy/koolproxy -v")
+end
+
+if nixio.fs.access("/tmp/adbyby/bin/adbyby") then
+mver=sys.exec("/tmp/adbyby/bin/adbyby --version|awk '{print $3}'|awk -F '(' '{print $1}' ")
+end
+
+
+
+
+if Run_flag==1 then
+Run_str="运行中"
+elseif  Run_flag==0 then
+Run_str="未运行"
+elseif  Run_flag==3 then
+Run_str="正在生成https证书"
+else
+Run_str="等待联网"
+end
+
+	-%>
+	var enable = '<%=enable%>';
+	var mode = '<%=mode%>';
+	var runmode = '<%=runmode%>';
+	var httpsmode = '<%=httpsmode%>';
+	var cert_flag = '<%=cert_flag%>';
+	initSwitch("Switch", enable, onSwitchClick);
+	initRadio("adbmode", mode, adbmode_Click);
+	initRadio("runmode", runmode , runmode_Click);
+	initRadio("httpsmode", httpsmode , httpsmode_Click);
+	$("#Save").click(function(){
+			var data = {};
+			var para = {};
+			para.adb = {};
+			para.adb.config = data; //{enable:$("#Switch").attr("data-value"),mode:};
+			data.enable =$("#Switch").attr("data-value");
+			data.mode =mode;
+			data.runmode =runmode;
+			data.https=httpsmode;
+			showLoading(label.saving);
+			apiSet(para, function(ret){
+				$.setTimeout(function(){
+					closeLoading();location.reload(); 
+				}, ret[K_MODULE].adb.config.wait_time * 1000);
+			});
+	});
+	function adbmode_Click(idx){
+		if (0 == idx)
+		{
+		 mode=0;
+               $("#https_div").hide();
+		}
+		else
+		{
+		 mode=1;
+		 $("#https_div").show();
+		}
+	}
+	function runmode_Click(idx){
+		if (0 == idx)
+               runmode=0;
+		else
+		 runmode=1;
+	}
+	function httpsmode_Click(idx){
+		if (0 == idx)
+		{
+		 httpsmode=0;
+               $("#downcert").hide();
+		}
+		else
+		{
+		 httpsmode=1;
+		 if (cert_flag == 1)
+		 $("#downcert").show();
+               else
+		 $("#downcert").hide();
+		}
+	}
+	function onSwitchClick(state, init){
+
+	}
+})();
+</script>
+<div class="help hidden">
+	<ul class="help-content">
+		<li class="help-head">
+			<img class="app-icon" src="./luci-static/images/app-icon/adb.png" />
+			<span class="help-title">广告屏蔽</span>
+		</li>
+		<li class="summary">可以通过广告屏蔽过滤网页或视频网站的广告</li>
+	</ul>
+</div>
+<div class="head-con">
+	<img class="app-icon" src="./luci-static/images/app-icon/adb.png" />
+	<a href="javascript:history.go(-1);" class="head-btn-l">
+		<i class="head-btn icon icon_back"></i>
+		<span class="head-title">广告屏蔽</span>
+
+	</a>
+<a href="/cgi-bin#/pc/adbsetApp" style="margin-right: 5%;float:right;"><span  class="head-title">高级设置</span></a>
+</div>
+<div class="set-con below-head">
+	<ul class="set-con set-con-switch switch-bottom">
+		<p class="set-con-desc">
+			<label class="tip-lbl">开启广告屏蔽</label>
+			<span id="Switch" class="switch" style="margin-right: 155px;">
+				<i class="switch-circle icon_select_off"></i>
+			</span>
+		</p>
+	</ul>
+</div>
+
+<div id="Param">
+		<ul id="WispMode" class="set-con set-con-radio">
+			<li class="set-con-radio">
+				<label class="radio-title">广告屏蔽方式</label>
+				<span id="adbmode" class="radio-group">
+					<span class="radio uncheck">
+						<i class="uncheck icon_radiobox_off"></i><i class="checked icon_radiobox_on"></i>
+						<label>adbyby&nbsp;&nbsp;</label>
+					</span>
+					<span class="radio radio-r uncheck">
+						<i class="uncheck icon_radiobox_off"></i><i class="checked icon_radiobox_on"></i>
+						<label>koolproxy</label>
+					</span>
+				</span>
+			</li>
+		</ul>
+</div>
+
+<div id="run_div">
+		<ul id="WispMode" class="set-con set-con-radio">
+			<li class="set-con-radio">
+				<label class="radio-title">运行模式</label>
+				<span id="runmode" class="radio-group">
+					<span class="radio uncheck">
+						<i class="uncheck icon_radiobox_off"></i><i class="checked icon_radiobox_on"></i>
+						<label>全局模式</label>
+					</span>
+					<span class="radio radio-r uncheck">
+						<i class="uncheck icon_radiobox_off"></i><i class="checked icon_radiobox_on"></i>
+						<label>广告列表模式</label>
+					</span>
+				</span>
+			</li>
+		</ul>
+</div>
+
+<div id="https_div">
+		<ul id="WispMode" class="set-con set-con-radio">
+			<li class="set-con-radio">
+				<label class="radio-title">是否启用https</label>
+				<span id="httpsmode" class="radio-group">
+					<span class="radio uncheck">
+						<i class="uncheck icon_radiobox_off"></i><i class="checked icon_radiobox_on"></i>
+						<label>不启用&nbsp;&nbsp;&nbsp;&nbsp;</label>
+					</span>
+					<span class="radio radio-r uncheck">
+						<i class="uncheck icon_radiobox_off"></i><i class="checked icon_radiobox_on"></i>
+						<label>启用</label>
+					</span>
+<span id="downcert"><a href=/kp.crt><input type="button" class="btn" id="certbutton" style="width:86px;margin-top: 1px;margin-bottom: 5px;margin-left: 15px;height: 22px;line-height: 22px;" value="下载证书"></a> 
+
+				</span>
+			</li>
+		</ul>
+</div>
+<ul class="set-con">
+		<li class="text-con text-con-focus">
+			<label class="desc-lbl">运行状态</label>
+			<input id="CurSwVer" class="text hover" readonly="readonly" value="<%=Run_str%>">
+		</li>
+
+	</ul>
+<ul class="set-con">
+
+		<li class="text-con text-con-focus">
+			<label class="desc-lbl">程序版本</label>
+			<input id="CurSwVer" class="text hover" readonly="readonly" value="<%=mver%>">
+		</li>
+	</ul>
+<ul class="set-con">
+
+		<li class="text-con text-con-focus">
+			<label class="desc-lbl">规则日期</label>
+			<input id="CurSwVer" class="text hover" readonly="readonly" value='<%=lazy_time%>'>
+		</li>
+</ul>
+
+
+<div class="btn-con">
+		<input id="Save" class="btn" type="button" value="保存">
+</div>
+
+
+
+

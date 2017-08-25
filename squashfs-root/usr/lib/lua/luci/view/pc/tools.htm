@@ -1,0 +1,156 @@
+<style type="text/css">
+	ul.switch-bottom{
+		margin-bottom:30px;
+	}
+</style>
+
+<script type="text/javascript">
+(function(){
+	<%-
+		local para = {
+			tools = {config = {}}
+		}
+
+		--local result = tpl_get_data(para)
+		--local enable = result[K_MODULE].tools.config.enable
+
+
+cron_txt=nixio.fs.readfile("/etc/crontabs/root") or ""
+auto_txt=nixio.fs.readfile("/etc/rc.local") or ""
+host_txt=nixio.fs.readfile("/etc/hosts") or ""
+dns_txt=nixio.fs.readfile("/etc/adb/usr.txt") or "#  ------------------------------屏蔽规则---------------------------------\
+#比如要屏蔽baidu.com，规则为：address=/baidu.com/127.0.0.1\
+"
+	-%>
+	$("#Savecron").click(function(){
+			var data = {};
+			var para = {};
+			para.tools = {};
+			para.tools.config = data; //{enable:$("#Switch").attr("data-value"),mode:};
+			data.value =$("#crons").val();
+			data.index =0;
+			showLoading(label.saving);
+			apiSet(para, function(ret){
+				$.setTimeout(function(){
+					closeLoading();
+				}, ret[K_MODULE].tools.config.wait_time * 1000);
+			});
+	});
+
+	$("#Saveauto").click(function(){
+			var data = {};
+			var para = {};
+			para.tools = {};
+			para.tools.config = data; //{enable:$("#Switch").attr("data-value"),mode:};
+			data.value =$("#autos").val();
+			data.index =1;
+			showLoading(label.saving);
+			apiSet(para, function(ret){
+				$.setTimeout(function(){
+					closeLoading();
+				}, ret[K_MODULE].tools.config.wait_time * 1000);
+			});
+	});
+
+	$("#Savehost").click(function(){
+			var data = {};
+			var para = {};
+			para.tools = {};
+			para.tools.config = data; //{enable:$("#Switch").attr("data-value"),mode:};
+			data.value =$("#hosts").val();
+			data.index =2;
+			showLoading(label.saving);
+			apiSet(para, function(ret){
+				$.setTimeout(function(){
+					closeLoading();
+				}, ret[K_MODULE].tools.config.wait_time * 1000);
+			});
+	});
+
+	$("#Savedns").click(function(){
+			var data = {};
+			var para = {};
+			para.tools = {};
+			para.tools.config = data; //{enable:$("#Switch").attr("data-value"),mode:};
+			data.value =$("#dnss").val();
+			data.index =3;
+			showLoading(label.saving);
+			apiSet(para, function(ret){
+				$.setTimeout(function(){
+					closeLoading();
+				}, ret[K_MODULE].tools.config.wait_time * 1000);
+			});
+	});
+	
+})();
+</script>
+<div class="help hidden">
+	<ul class="help-content">
+		<li class="help-head">
+			<img class="app-icon" src="./luci-static/images/app-icon/tools.png" />
+			<span class="help-title">高级设置</span>
+		</li>
+		<li class="summary">设置启动任务、定时任务等</li>
+	</ul>
+</div>
+<div class="head-con">
+	<img class="app-icon" src="./luci-static/images/app-icon/tools.png" />
+	<a href="javascript:history.go(-1);" class="head-btn-l">
+		<i class="head-btn icon icon_back"></i>
+		<span class="head-title">高级设置</span>
+	</a>
+</div>
+
+
+<div class="set-con below-head" >
+	<ul class="set-con set-con-switch switch-bottom" >
+		<p class="set-con-desc" style="text-align: center">
+			<label class="tip-lbl">计划任务（定时任务）</label>
+		</p>
+
+<textarea  style="width: 80%"  id="crons" rows="10"><%=cron_txt%></textarea>
+	</ul>
+</div>
+<div class="btn-con" style="border-bottom: 1px solid #DDD;">
+		<input id="Savecron" class="btn" type="button" value="保存">
+</div>
+
+<div class="set-con below-head">
+<ul class="set-con set-con-switch switch-bottom">
+		<p class="set-con-desc" style="text-align: center">
+			<label class="tip-lbl">启动任务</label>
+		</p>
+<textarea  style="width: 80%"  id="autos" rows="10"><%=auto_txt%></textarea>
+</ul>
+</div>
+
+<div class="btn-con" style="border-bottom: 1px solid #DDD;">
+		<input id="Saveauto" class="btn" type="button" value="保存">
+</div>
+
+<div class="set-con below-head">
+<ul class="set-con set-con-switch switch-bottom">
+		<p class="set-con-desc" style="text-align: center">
+			<label class="tip-lbl">Host配置</label>
+		</p>
+<textarea  style="width: 80%"  id="hosts" rows="10"><%=host_txt%></textarea>
+</ul>
+</div>
+
+<div class="btn-con" style="border-bottom: 1px solid #DDD;">
+		<input id="Savehost" class="btn" type="button" value="保存">
+</div>
+
+<div class="set-con below-head">
+<ul class="set-con set-con-switch switch-bottom">
+		<p class="set-con-desc" style="text-align: center">
+			<label class="tip-lbl">Dnsmasq自定义规则</label>
+		</p>
+<textarea  style="width: 80%"  id="dnss" rows="10"><%=dns_txt%></textarea>
+</ul>
+</div>
+
+<div class="btn-con" style="border-bottom: 1px solid #DDD;">
+		<input id="Savedns" class="btn" type="button" value="保存">
+</div>
+

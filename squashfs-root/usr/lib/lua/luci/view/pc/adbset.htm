@@ -1,0 +1,100 @@
+<style type="text/css">
+	ul.switch-bottom{
+		margin-bottom:30px;
+	}
+</style>
+
+<script type="text/javascript">
+(function(){
+	<%-
+sip_txt=nixio.fs.readfile("/etc/adbyby_sip.txt") or ""
+dip_txt=nixio.fs.readfile("/etc/adbyby_dip.txt") or ""
+httpsip_txt=nixio.fs.readfile("/etc/adbyby_httpsip.txt") or ""
+user_txt=nixio.fs.readfile("/etc/adbyby_user.txt") or ""
+	-%>
+	$("#Save").click(function(){
+			var data = {};
+			var para = {};
+			para.adbset = {};
+			para.adbset.config = data; 
+			data.sip =$("#sip_content").val();
+			data.dip =$("#dip_content").val();
+			data.httpsip =$("#https_content").val();
+			data.user =$("#user_content").val();
+			showLoading(label.saving);
+			apiSet(para, function(ret){
+				$.setTimeout(function(){
+					closeLoading();
+				}, ret[K_MODULE].adbset.config.wait_time * 1000);
+			});
+	});
+
+
+	
+})();
+</script>
+<div class="help hidden">
+	<ul class="help-content">
+		<li class="help-head">
+			<img class="app-icon" src="./luci-static/images/app-icon/adb.png" />
+			<span class="help-title">广告屏蔽-高级设置</span>
+		</li>
+		<li class="summary">可以通过广告屏蔽过滤网页或视频网站的广告，在此可设置广告屏蔽的高级参数</li>
+	</ul>
+</div>
+<div class="head-con">
+	<img class="app-icon" src="./luci-static/images/app-icon/adb.png" />
+	<a href="javascript:history.go(-1);" class="head-btn-l">
+		<i class="head-btn icon icon_back"></i>
+		<span class="head-title">广告屏蔽-高级设置</span>
+
+	</a>
+</div>
+
+
+<div class="set-con below-head" >
+	<ul class="set-con set-con-switch switch-bottom" >
+		<p class="set-con-desc" style="text-align: center">
+			<label class="tip-lbl">如下源IP不经过广告过滤处理（每行一个IP）</label>
+		</p>
+
+<textarea  style="width: 80%"  id="sip_content" rows="3"><%=sip_txt%></textarea>
+	</ul>
+</div>
+
+
+<div class="set-con below-head">
+<ul class="set-con set-con-switch switch-bottom">
+		<p class="set-con-desc" style="text-align: center">
+			<label class="tip-lbl">如下目的IP不经过广告过滤处理（每行一个IP）</label>
+		</p>
+<textarea  style="width: 80%"  id="dip_content" rows="3"><%=dip_txt%></textarea>
+</ul>
+</div>
+
+
+<div class="set-con below-head">
+<ul class="set-con set-con-switch switch-bottom">
+		<p class="set-con-desc" style="text-align: center;width: 400px;">
+			<label class="tip-lbl">https只过滤如下源IP（每行一个IP，留空表示过滤所有IP）</label>
+		</p>
+<textarea  style="width: 80%"  id="https_content" rows="3"><%=httpsip_txt%></textarea>
+</ul>
+</div>
+
+
+
+<div class="set-con below-head">
+<ul class="set-con set-con-switch switch-bottom">
+		<p class="set-con-desc" style="text-align: center">
+			<label class="tip-lbl">自定义过滤规则</label>
+		</p>
+<textarea  style="width: 80%"  id="user_content" rows="15"><%=user_txt%></textarea>
+</ul>
+</div>
+
+<div class="btn-con" style="border-bottom: 1px solid #DDD;">
+		<input id="Save" class="btn" type="button" value="保存">
+</div>
+
+
