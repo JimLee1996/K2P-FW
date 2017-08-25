@@ -1,0 +1,8 @@
+
+config adbyby 'adbyby'
+	option runmode '0'
+	option https '0'
+	option mode '0'
+	option enable '0'
+
+
