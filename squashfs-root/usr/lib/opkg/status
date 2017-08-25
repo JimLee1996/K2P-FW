@@ -927,14 +927,6 @@ Conffiles:
  /etc/config/device_manage d41d8cd98f00b204e9800998ecf8427e
 Installed-Time: 1502269015
 
-Package: auto_upgrade
-Version: 1
-Depends: libc
-Provides:
-Status: install user installed
-Architecture: ramips_1004kc
-Installed-Time: 1502269015
-
 Package: uclibcxx
 Version: 0.2.4-1
 Depends: libc
@@ -986,14 +978,6 @@ Provides:
 Status: install hold installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269016
-
-Package: luci-app-auto-upgrade
-Version: 1.0.0-1
-Depends: libc
-Provides:
-Status: install user installed
-Architecture: ramips_1004kc
-Installed-Time: 1502269017
 
 Package: kmod-fs-ntfs
 Version: 3.10.14-1

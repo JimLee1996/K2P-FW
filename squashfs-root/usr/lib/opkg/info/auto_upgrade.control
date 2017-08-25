@@ -1,8 +1,0 @@
-Package: auto_upgrade
-Version: 1
-Depends: libc
-Source: package/phicomm/auto_upgrade
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 1323
-Description:  unknown
