@@ -1,0 +1,149 @@
+#!/bin/sh /etc/rc.common
+
+######################################################################
+#
+# Function  : Run adbyby in RAM
+#
+# Creater   : ywb94@qq.com, 2017-02-13
+#
+# Copyright : yushi studio
+#
+######################################################################
+
+START=80
+
+
+add_mac_rule() {
+local cfg="$1"
+local rules="$2"
+local prefix="$3"
+local suffix="$4"
+
+config_get srcmac $cfg mac
+config_get ienable $cfg internet_enable
+if [ -z "$srcmac" ]; then
+return 1
+fi
+if [ "$ienable" == "1" ]; then
+return 1
+fi
+
+append $rules "$prefix" "$N"
+
+append $rules "-m mac --mac-source $srcmac"
+append $rules "$suffix"
+
+}
+
+addp_mac_rule() {
+local cfg="$1"
+local rules="$2"
+local prefix="$3"
+local suffix="$4"
+local srcmac weekdays starttime stoptime range
+
+config_get srcmac $cfg src_mac
+config_get weekdays $cfg weekdays
+config_get starttime $cfg start_time
+config_get stoptime $cfg stop_time
+
+if [ -z "$srcmac" ]; then
+return 1
+fi
+
+append $rules "$prefix" "$N"
+
+append $rules "-m mac --mac-source $srcmac"
+
+if [ -n "$weekdays" ]; then
+ append range "--weekdays $weekdays"
+fi
+
+if [ -n "$starttime" ]; then
+ append range "--timestart $starttime"
+fi
+
+if [ -n "$stoptime" ]; then
+ append range "--timestop $stoptime"
+fi
+
+if [ -n "$range" ]; then
+ append $rules "-m time --kerneltz"
+ append $rules "$range"
+fi
+append $rules "$suffix"
+
+}
+
+adb_mod=`uci get adbyby.adbyby.mode 2>/dev/null`
+
+start() {
+#不重复启动
+icount=`ps -w|grep adbyby.sh|grep -v grep|wc -l`
+if [ "$adb_mod" = "1" ]  ;then
+icount2=`netstat -nautp|grep koolproxy|grep -v grep|wc -l`
+else
+icount2=`netstat -nautp|grep adbyby|grep -v grep|wc -l`
+fi
+
+if [ $icount = 0 -a $icount2 = 0 ] ;then
+#config_load device_manage
+#local mac_rules
+#local prefix="iptables -t nat -I adbyby_chain"
+#local suffix=" -j RETURN"
+#config_foreach add_mac_rule limit mac_rules  "$prefix" "$suffix" 
+
+#config_load parentctl
+#config_get_bool pctl_enable config enabled 0
+#if [ "$pctl_enable" == "1" ]; then
+#config_foreach addp_mac_rule rule mac_rules  "$prefix" "$suffix" 
+#fi
+
+
+/root/adbyby.sh & #"$mac_rules" &
+
+#等待下载
+sleep 2
+fi
+ 
+}
+
+stop() {
+killall -9 adb_mon.sh 2>/dev/null
+
+rm -f /tmp/dnsmasq.d/adbyby_host.conf 2>/dev/null
+rm -f /tmp/dnsmasq.d/adblock.conf 2>/dev/null
+
+#清除防火墙规则
+iptables -w -t nat -F adbyby_chain 2>/dev/null
+iptables -t nat -D PREROUTING -p tcp -j adbyby_chain 2>/dev/null
+iptables -t nat -X adbyby_chain 2>/dev/null
+ipset -X adbyby_list 2>/dev/null
+ipset -X adblock 2>/dev/null
+
+if [ -f /tmp/adbyby/bin/stopadbb ] ;then
+ps -w|grep \\./adbyby|grep -v grep |awk '{print $1}'|xargs kill 2>/dev/null
+rm -rf /tmp/adbyby 
+fi
+
+if [ -f /tmp/koolproxy/koolproxy ] ;then
+ps -w|grep koolproxy|grep -v grep |awk '{print $1}'|xargs kill 2>/dev/null
+rm -rf /tmp/koolproxy
+fi
+
+
+icount=`ps -w|grep adbyby.sh|grep -v grep|wc -l`
+if [ $icount -gt 0 ] ;then
+mid=`ps -w|grep adbyby.sh|grep -v grep|awk '{print $1}'`
+kill -9 $mid 2>/dev/null 
+fi
+
+}
+
+restart() {
+  stop
+  start
+}
+
+
+
