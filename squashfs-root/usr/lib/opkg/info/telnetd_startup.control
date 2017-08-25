@@ -1,8 +1,0 @@
-Package: telnetd_startup
-Version: 1
-Depends: libc, libuci, libubox, libopenssl
-Source: package/phicomm/telnetd_startup
-Section: Phicomm Properties
-Architecture: ramips_1004kc
-Installed-Size: 9779
-Description:  unknown
