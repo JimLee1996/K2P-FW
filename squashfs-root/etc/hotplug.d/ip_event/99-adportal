@@ -1,5 +1,0 @@
-#!/bin/sh
-
-[ "$ACTION" != "OFFLINE" ] && return
-
-ipset del ad_white "$MAC" >/dev/null 2>&1

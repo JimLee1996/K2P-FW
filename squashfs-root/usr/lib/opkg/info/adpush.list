@@ -1,6 +1,0 @@
-/etc/config/adpush
-/etc/hotplug.d/ip_event/99-adportal
-/usr/sbin/adportal
-/etc/hotplug.d/iface/99-adpush
-/usr/sbin/adpush
-/etc/init.d/adpush

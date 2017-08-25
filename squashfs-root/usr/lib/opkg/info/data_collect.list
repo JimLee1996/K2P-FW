@@ -1,7 +1,0 @@
-/etc/config/collect
-/etc/hotplug.d/iface/85-report_need
-/usr/bin/up_data
-/etc/init.d/collect
-/usr/bin/statistics
-/etc/crontabs/root
-/usr/bin/collect
