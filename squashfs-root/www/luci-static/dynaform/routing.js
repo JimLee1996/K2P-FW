@@ -55,7 +55,8 @@ var h5States = {
   "screenSet": load("screenSet", "Con"),
   "modifyPwd": load("modifyPwd", "Con"),
   "lanSet": load("lanSet", "Con"),
-  "sysUpgrade": load("sysUpgrade", "Con"),
+  //"sysUpgrade": load("sysUpgrade", "Con"),
+  "adb":load("adb","Content"),
   "light": load("light", "Con"),
   "timeZone": load("timeZone", "Con")
 };
