@@ -415,6 +415,14 @@ Conffiles:
  /etc/config/ddns 5438cd197244324c9400275a93574414
 Installed-Time: 1502269015
 
+Package: libnettle
+Version: 2.7.1-1
+Depends: libc, libgmp
+Provides:
+Status: install user installed
+Architecture: ramips_1004kc
+Installed-Time: 1503804533
+
 Package: wpspbc
 Version: 1.1-1
 Depends: libc, libuci, phicomm_libs
@@ -422,17 +430,6 @@ Provides:
 Status: install user installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269018
-
-Package: dnsmasq
-Version: 2.71-4
-Depends: libc
-Provides:
-Status: install user installed
-Architecture: ramips_1004kc
-Conffiles:
- /etc/config/dhcp e501edba1357e23b6a7642b357c597c4
- /etc/dnsmasq.conf 7cf378e58d3fe5db31f4116a16c15c61
-Installed-Time: 1502269016
 
 Package: procd
 Version: 2014-09-15-c1a558f7d0c1e6c1ffa5a47d557a7b45205eef1d
@@ -1140,6 +1137,14 @@ Status: install user installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269017
 
+Package: ip6tables
+Version: 1.4.21-1
+Depends: libc, kmod-ip6tables, iptables
+Provides:
+Status: install user installed
+Architecture: ramips_1004kc
+Installed-Time: 1502269016
+
 Package: libxtables
 Version: 1.4.21-1
 Depends: libc
@@ -1148,14 +1153,6 @@ Status: install user installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269016
 Auto-Installed: yes
-
-Package: ip6tables
-Version: 1.4.21-1
-Depends: libc, kmod-ip6tables, iptables
-Provides:
-Status: install user installed
-Architecture: ramips_1004kc
-Installed-Time: 1502269016
 
 Package: lighttpd-mod-redirect
 Version: 1.4.35-2
@@ -1223,14 +1220,6 @@ Status: install hold installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269016
 
-Package: luci-lib-json
-Version: 1.0.0-1
-Depends: libc
-Provides:
-Status: install user installed
-Architecture: ramips_1004kc
-Installed-Time: 1502269017
-
 Package: kmod-hw_wdg
 Version: 3.10.14-1
 Depends: kernel (= 3.10.14-1-b111ad83351afe639183d8564c3857ca)
@@ -1238,6 +1227,14 @@ Provides:
 Status: install hold installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269016
+
+Package: luci-lib-json
+Version: 1.0.0-1
+Depends: libc
+Provides:
+Status: install user installed
+Architecture: ramips_1004kc
+Installed-Time: 1502269017
 
 Package: kmod-nls-iso8859-1
 Version: 3.10.14-1
@@ -1262,6 +1259,14 @@ Provides:
 Status: install hold installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269016
+
+Package: libgmp
+Version: 6.0.0-1
+Depends: libc
+Provides:
+Status: install user installed
+Architecture: ramips_1004kc
+Installed-Time: 1503804519
 
 Package: luci-app-light
 Version: 1.0.0-1
@@ -1489,4 +1494,15 @@ Status: install hold installed
 Architecture: ramips_1004kc
 Installed-Time: 1502269016
 Auto-Installed: yes
+
+Package: dnsmasq-full
+Version: 2.71-4
+Depends: libc, kmod-ipv6, libnettle
+Provides:
+Status: install user installed
+Architecture: ramips_1004kc
+Conffiles:
+ /etc/config/dhcp 326e2116bd9bc3ecc5be4f75cd1e7647
+ /etc/dnsmasq.conf 7cf378e58d3fe5db31f4116a16c15c61
+Installed-Time: 1503804636
 
